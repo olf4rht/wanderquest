@@ -1,5 +1,6 @@
 from __future__ import annotations
 import io
+import os
 from unittest.mock import patch, MagicMock
 from PIL import Image
 from src.lineart import extract_lineart
@@ -22,9 +23,17 @@ def _make_lineart_response() -> bytes:
     return buf.read()
 
 
-@patch("src.lineart.replicate")
-def test_extract_lineart_returns_pil_image(mock_replicate):
-    mock_replicate.run.return_value = [_make_lineart_response()]
+@patch.dict("os.environ", {"REPLICATE_API_TOKEN": "test-token"})
+@patch("replicate.run")
+def test_extract_lineart_replicate(mock_run):
+    mock_run.return_value = [_make_lineart_response()]
+    result = extract_lineart(_make_test_image())
+    assert isinstance(result, Image.Image)
+    assert result.mode == "L"
+
+
+@patch.dict("os.environ", {}, clear=True)
+def test_extract_lineart_local_fallback():
     result = extract_lineart(_make_test_image())
     assert isinstance(result, Image.Image)
     assert result.mode == "L"
