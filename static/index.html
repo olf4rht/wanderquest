@@ -215,19 +215,14 @@
       }
     });
 
-    // Color preset buttons
+    // Color preset buttons (visual feedback only; app.js handles generation)
     document.querySelectorAll('.color-preset').forEach(btn => {
       btn.addEventListener('click', () => {
         document.getElementById('color-picker').value = btn.dataset.color;
       });
     });
-
-    // Upload zone drag & drop visual cue
-    const zone = document.getElementById('upload-zone');
-    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-    zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); });
   </script>
+  <script src="/static/app.js"></script>
 
 </body>
 </html>
