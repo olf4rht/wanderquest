@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WanderQuest Stamp Generator</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <h1 class="app-title">WanderQuest</h1>
+    <p class="app-subtitle">Artisanal Stamp Generator</p>
+  </header>
+
+  <main class="app-layout">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+
+      <!-- Upload Section -->
+      <section class="control-section">
+        <button class="section-header" aria-expanded="true" data-section="upload">
+          <span class="section-icon">&#9650;</span>
+          Upload
+        </button>
+        <div class="section-body" id="section-upload">
+          <div class="upload-zone" id="upload-zone">
+            <p class="upload-hint">Drag &amp; drop an image here</p>
+            <p class="upload-or">or</p>
+            <label class="upload-btn">
+              Choose File
+              <input type="file" id="file-input" accept="image/*" hidden>
+            </label>
+          </div>
+          <p class="upload-filename" id="upload-filename"></p>
+        </div>
+      </section>
+
+      <!-- Color Section -->
+      <section class="control-section">
+        <button class="section-header" aria-expanded="true" data-section="color">
+          <span class="section-icon">&#9650;</span>
+          Color
+        </button>
+        <div class="section-body" id="section-color">
+          <label class="control-label" for="color-picker">Stamp Color</label>
+          <input type="color" id="color-picker" value="#C83232" class="color-input">
+          <div class="color-presets">
+            <button class="color-preset" data-color="#C83232" style="background:#C83232" title="Red"></button>
+            <button class="color-preset" data-color="#1E3A5F" style="background:#1E3A5F" title="Navy"></button>
+            <button class="color-preset" data-color="#2D5F2D" style="background:#2D5F2D" title="Green"></button>
+            <button class="color-preset" data-color="#1A1A1A" style="background:#1A1A1A" title="Black"></button>
+            <button class="color-preset" data-color="#5B2C6F" style="background:#5B2C6F" title="Purple"></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Text Section -->
+      <section class="control-section">
+        <button class="section-header" aria-expanded="true" data-section="text">
+          <span class="section-icon">&#9650;</span>
+          Text
+        </button>
+        <div class="section-body" id="section-text">
+          <label class="control-label" for="primary-text">Primary Text</label>
+          <input type="text" id="primary-text" class="text-input" placeholder="e.g. TOKYO">
+
+          <label class="control-label" for="secondary-text">Secondary Text</label>
+          <input type="text" id="secondary-text" class="text-input" placeholder="e.g. 2026">
+
+          <label class="control-label" for="font-select">Font Style</label>
+          <select id="font-select" class="select-input">
+            <option value="serif">Serif</option>
+            <option value="blackletter">Blackletter</option>
+            <option value="sans">Sans-Serif</option>
+            <option value="handwritten">Handwritten</option>
+            <option value="stencil">Stencil</option>
+          </select>
+
+          <label class="control-label" for="text-placement">Text Placement</label>
+          <select id="text-placement" class="select-input">
+            <option value="below">Below</option>
+            <option value="above">Above</option>
+            <option value="top_arc">Top Arc</option>
+            <option value="bottom_arc">Bottom Arc</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Shape & Border Section -->
+      <section class="control-section">
+        <button class="section-header" aria-expanded="true" data-section="shape">
+          <span class="section-icon">&#9650;</span>
+          Shape &amp; Border
+        </button>
+        <div class="section-body" id="section-shape">
+          <label class="control-label" for="shape-select">Shape</label>
+          <select id="shape-select" class="select-input">
+            <option value="circle">Circle</option>
+            <option value="rectangle">Rectangle</option>
+            <option value="oval">Oval</option>
+            <option value="rounded_rectangle">Rounded Rectangle</option>
+          </select>
+
+          <label class="control-label" for="border-style">Border Style</label>
+          <select id="border-style" class="select-input">
+            <option value="none">None</option>
+            <option value="single">Single</option>
+            <option value="double">Double</option>
+          </select>
+
+          <label class="control-label" for="border-thickness">
+            Border Thickness
+            <span class="slider-value" id="border-thickness-value">3</span>
+          </label>
+          <input type="range" id="border-thickness" min="1" max="8" value="3" step="1" class="range-input">
+        </div>
+      </section>
+
+      <!-- Ink & Aging Section -->
+      <section class="control-section">
+        <button class="section-header" aria-expanded="true" data-section="ink">
+          <span class="section-icon">&#9650;</span>
+          Ink &amp; Aging
+        </button>
+        <div class="section-body" id="section-ink">
+          <label class="control-label" for="ink-density">
+            Ink Density
+            <span class="slider-value" id="ink-density-value">0.50</span>
+          </label>
+          <input type="range" id="ink-density" min="0" max="1" value="0.5" step="0.05" class="range-input">
+
+          <label class="control-label" for="wear">
+            Wear
+            <span class="slider-value" id="wear-value">0.30</span>
+          </label>
+          <input type="range" id="wear" min="0" max="1" value="0.3" step="0.05" class="range-input">
+
+          <label class="control-label" for="edge-bleed">
+            Edge Bleed
+            <span class="slider-value" id="edge-bleed-value">0.20</span>
+          </label>
+          <input type="range" id="edge-bleed" min="0" max="1" value="0.2" step="0.05" class="range-input">
+
+          <label class="control-label" for="background-toggle">Background</label>
+          <select id="background-toggle" class="select-input">
+            <option value="transparent">Transparent</option>
+            <option value="white">White</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Image Section -->
+      <section class="control-section">
+        <button class="section-header" aria-expanded="true" data-section="image">
+          <span class="section-icon">&#9650;</span>
+          Image
+        </button>
+        <div class="section-body" id="section-image">
+          <label class="control-label" for="line-thickness">
+            Line Thickness
+            <span class="slider-value" id="line-thickness-value">2</span>
+          </label>
+          <input type="range" id="line-thickness" min="1" max="5" value="2" step="1" class="range-input">
+
+          <label class="control-label" for="subject-scale">
+            Subject Scale
+            <span class="slider-value" id="subject-scale-value">0.50</span>
+          </label>
+          <input type="range" id="subject-scale" min="0.2" max="0.9" value="0.5" step="0.05" class="range-input">
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- ===== PREVIEW ===== -->
+    <section class="preview-area">
+      <div class="preview-container" id="preview-container">
+        <div class="preview-placeholder" id="preview-placeholder">
+          <svg class="placeholder-icon" viewBox="0 0 80 80" width="80" height="80" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="40" cy="40" r="36" stroke-dasharray="6 4"/>
+            <text x="40" y="44" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">STAMP</text>
+          </svg>
+          <p>Configure your stamp and click Generate</p>
+        </div>
+        <img id="preview-image" class="preview-image" alt="Stamp preview" hidden>
+      </div>
+      <button class="download-btn" id="download-btn">Download PNG</button>
+    </section>
+
+  </main>
+
+  <script>
+    // Collapsible sections
+    document.querySelectorAll('.section-header').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!expanded));
+        const body = btn.nextElementSibling;
+        body.hidden = expanded;
+        btn.querySelector('.section-icon').textContent = expanded ? '\u25BC' : '\u25B2';
+      });
+    });
+
+    // Slider value display
+    document.querySelectorAll('.range-input').forEach(slider => {
+      const display = document.getElementById(slider.id + '-value');
+      if (display) {
+        slider.addEventListener('input', () => {
+          display.textContent = parseFloat(slider.value).toFixed(
+            slider.step.includes('.') ? 2 : 0
+          );
+        });
+      }
+    });
+
+    // Color preset buttons
+    document.querySelectorAll('.color-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('color-picker').value = btn.dataset.color;
+      });
+    });
+
+    // Upload zone drag & drop visual cue
+    const zone = document.getElementById('upload-zone');
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); });
+  </script>
+
+</body>
+</html>
