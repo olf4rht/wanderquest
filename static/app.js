@@ -216,6 +216,13 @@ fileInput.addEventListener('change', () => {
   if (fileInput.files.length > 0) uploadImage(fileInput.files[0]);
 });
 
+// Make entire upload zone clickable (not just the label)
+uploadZone.addEventListener('click', (e) => {
+  if (e.target !== fileInput && !e.target.closest('.upload-btn')) {
+    fileInput.click();
+  }
+});
+
 // Drag-and-drop (extend the existing visual-cue handler with actual upload)
 uploadZone.addEventListener('drop', e => {
   e.preventDefault();

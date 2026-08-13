@@ -13,7 +13,10 @@ router = APIRouter(prefix="/api")
 # In-memory store for uploaded images (session-scoped, no persistence needed)
 _image_store: dict[str, bytes] = {}
 
-ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "image/webp"}
+ALLOWED_CONTENT_TYPES = {
+    "image/png", "image/jpeg", "image/jpg", "image/webp",
+    "image/heic", "image/heif",
+}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 
