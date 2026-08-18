@@ -33,13 +33,17 @@ const backgroundToggle = document.getElementById('background-toggle');
 const lineThickness = document.getElementById('line-thickness');
 const subjectScale = document.getElementById('subject-scale');
 const thresholdStrength = document.getElementById('threshold-strength');
+const thresholdEnabled = document.getElementById('threshold-enabled');
+const thresholdRow = document.getElementById('threshold-row');
 const edgeStrength = document.getElementById('edge-strength');
+const edgeEnabled = document.getElementById('edge-enabled');
+const edgeRow = document.getElementById('edge-row');
 
 // All interactive controls (for enabling/disabling and wiring events)
 const allControls = [
   colorPicker, primaryText, secondaryText, fontSelect, textPlacement,
   shapeSelect, borderStyle, borderThickness, inkDensity, wear, edgeBleed,
-  backgroundToggle, lineThickness, subjectScale, thresholdStrength, edgeStrength,
+  backgroundToggle, lineThickness, subjectScale, thresholdStrength, thresholdEnabled, edgeStrength, edgeEnabled,
 ];
 
 // ---------------------------------------------------------------------------
@@ -113,8 +117,8 @@ function getConfig() {
     edge_bleed: parseFloat(edgeBleed.value),
     line_thickness: parseInt(lineThickness.value, 10),
     subject_scale: parseFloat(subjectScale.value),
-    threshold_strength: parseFloat(thresholdStrength.value),
-    edge_strength: parseFloat(edgeStrength.value),
+    threshold_strength: thresholdEnabled.checked ? parseFloat(thresholdStrength.value) : 0,
+    edge_strength: edgeEnabled.checked ? parseFloat(edgeStrength.value) : 0,
     background: backgroundToggle.value,
     output_size: 1080,
   };
@@ -247,6 +251,16 @@ uploadZone.addEventListener('dragleave', () => {
 const debouncedControls = [primaryText, secondaryText, borderThickness, inkDensity, wear, edgeBleed, lineThickness, subjectScale, thresholdStrength, edgeStrength];
 debouncedControls.forEach(ctrl => {
   ctrl.addEventListener('input', debouncedGenerate);
+});
+
+// Threshold/Edge toggle checkboxes
+thresholdEnabled.addEventListener('change', () => {
+  thresholdRow.classList.toggle('disabled', !thresholdEnabled.checked);
+  generateStamp();
+});
+edgeEnabled.addEventListener('change', () => {
+  edgeRow.classList.toggle('disabled', !edgeEnabled.checked);
+  generateStamp();
 });
 
 // Controls — selects and color picker use immediate handler

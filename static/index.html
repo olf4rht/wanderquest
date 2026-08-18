@@ -158,17 +158,23 @@
           Image
         </button>
         <div class="section-body" id="section-image">
-          <label class="control-label" for="threshold-strength">
+          <label class="control-label" for="threshold-enabled">
             Threshold
+            <input type="checkbox" id="threshold-enabled" checked class="toggle-input">
+          </label>
+          <div class="slider-row" id="threshold-row">
             <span class="slider-value" id="threshold-strength-value">0.50</span>
-          </label>
-          <input type="range" id="threshold-strength" min="0" max="1" value="0.5" step="0.05" class="range-input">
+            <input type="range" id="threshold-strength" min="0" max="1" value="0.5" step="0.05" class="range-input">
+          </div>
 
-          <label class="control-label" for="edge-strength">
+          <label class="control-label" for="edge-enabled">
             Edges
-            <span class="slider-value" id="edge-strength-value">0.50</span>
+            <input type="checkbox" id="edge-enabled" checked class="toggle-input">
           </label>
-          <input type="range" id="edge-strength" min="0" max="1" value="0.5" step="0.05" class="range-input">
+          <div class="slider-row" id="edge-row">
+            <span class="slider-value" id="edge-strength-value">0.50</span>
+            <input type="range" id="edge-strength" min="0" max="1" value="0.5" step="0.05" class="range-input">
+          </div>
 
           <label class="control-label" for="line-thickness">
             Line Thickness

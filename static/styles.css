@@ -230,6 +230,34 @@ body {
   border-color: var(--dark-brown);
 }
 
+/* ---------- Toggle + slider row ---------- */
+.toggle-input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--warm-brown);
+  cursor: pointer;
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.slider-row .range-input {
+  flex: 1;
+}
+
+.slider-row .slider-value {
+  min-width: 2.5em;
+  text-align: right;
+}
+
+.slider-row.disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
 /* ---------- Range sliders ---------- */
 .range-input {
   width: 100%;
