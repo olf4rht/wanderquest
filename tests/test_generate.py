@@ -20,7 +20,7 @@ def _upload_image() -> str:
     return response.json()["image_id"]
 
 
-def _mock_lineart(image_bytes):
+def _mock_lineart(image_bytes, *args, **kwargs):
     """Return a fake line art image."""
     img = Image.new("L", (200, 200), 255)
     return img

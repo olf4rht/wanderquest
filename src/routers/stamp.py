@@ -60,6 +60,8 @@ class GenerateRequest(BaseModel):
     edge_bleed: float = 0.2
     line_thickness: int = 2
     subject_scale: float = 0.5
+    threshold_strength: float = 0.5
+    edge_strength: float = 0.5
     background: str = "transparent"
     output_size: int = 512
 
@@ -84,11 +86,19 @@ async def generate(request: GenerateRequest):
         edge_bleed=request.edge_bleed,
         line_thickness=request.line_thickness,
         subject_scale=request.subject_scale,
+        threshold_strength=request.threshold_strength,
+        edge_strength=request.edge_strength,
         background=request.background,
         output_size=request.output_size,
     )
 
-    result = generate_stamp(image_bytes, config)
+    import logging
+    logger = logging.getLogger(__name__)
+    try:
+        result = generate_stamp(image_bytes, config)
+    except Exception as e:
+        logger.exception("Stamp generation failed")
+        raise HTTPException(status_code=500, detail=str(e))
 
     buf = _io.BytesIO()
     result.save(buf, format="PNG")

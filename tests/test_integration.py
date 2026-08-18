@@ -8,7 +8,7 @@ from src.main import app
 client = TestClient(app)
 
 
-def _mock_lineart(image_bytes):
+def _mock_lineart(image_bytes, *args, **kwargs):
     img = Image.new("L", (200, 200), 255)
     return img
 

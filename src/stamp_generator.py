@@ -23,13 +23,15 @@ class StampConfig:
     edge_bleed: float
     line_thickness: int
     subject_scale: float
+    threshold_strength: float
+    edge_strength: float
     background: str
     output_size: int
 
 
 def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
     # Stage 1: Line art extraction
-    lineart = extract_lineart(image_bytes)
+    lineart = extract_lineart(image_bytes, config.threshold_strength, config.edge_strength)
 
     # Stage 2: Cleanup
     lineart = threshold_image(lineart)

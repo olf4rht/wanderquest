@@ -32,12 +32,14 @@ const edgeBleed = document.getElementById('edge-bleed');
 const backgroundToggle = document.getElementById('background-toggle');
 const lineThickness = document.getElementById('line-thickness');
 const subjectScale = document.getElementById('subject-scale');
+const thresholdStrength = document.getElementById('threshold-strength');
+const edgeStrength = document.getElementById('edge-strength');
 
 // All interactive controls (for enabling/disabling and wiring events)
 const allControls = [
   colorPicker, primaryText, secondaryText, fontSelect, textPlacement,
   shapeSelect, borderStyle, borderThickness, inkDensity, wear, edgeBleed,
-  backgroundToggle, lineThickness, subjectScale,
+  backgroundToggle, lineThickness, subjectScale, thresholdStrength, edgeStrength,
 ];
 
 // ---------------------------------------------------------------------------
@@ -111,6 +113,8 @@ function getConfig() {
     edge_bleed: parseFloat(edgeBleed.value),
     line_thickness: parseInt(lineThickness.value, 10),
     subject_scale: parseFloat(subjectScale.value),
+    threshold_strength: parseFloat(thresholdStrength.value),
+    edge_strength: parseFloat(edgeStrength.value),
     background: backgroundToggle.value,
     output_size: 1080,
   };
@@ -240,7 +244,7 @@ uploadZone.addEventListener('dragleave', () => {
 });
 
 // Controls — sliders and text inputs use debounced handler
-const debouncedControls = [primaryText, secondaryText, borderThickness, inkDensity, wear, edgeBleed, lineThickness, subjectScale];
+const debouncedControls = [primaryText, secondaryText, borderThickness, inkDensity, wear, edgeBleed, lineThickness, subjectScale, thresholdStrength, edgeStrength];
 debouncedControls.forEach(ctrl => {
   ctrl.addEventListener('input', debouncedGenerate);
 });
