@@ -112,7 +112,7 @@ function getConfig() {
     line_thickness: parseInt(lineThickness.value, 10),
     subject_scale: parseFloat(subjectScale.value),
     background: backgroundToggle.value,
-    output_size: 512,
+    output_size: 1080,
   };
 }
 

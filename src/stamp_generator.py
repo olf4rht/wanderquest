@@ -4,7 +4,7 @@ from src.lineart import extract_lineart
 from src.cleanup import threshold_image, remove_noise, auto_crop, adjust_line_thickness
 from src.composition import create_stamp_frame, place_image_in_frame
 from src.text_renderer import render_text_straight, render_text_curved
-from src.ink_effect import colorize, apply_ink_texture, apply_wear, apply_edge_bleed
+from src.ink_effect import apply_stamp_roughness, colorize, apply_ink_texture, apply_wear, apply_edge_bleed
 from dataclasses import dataclass
 
 
@@ -68,13 +68,16 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
                 composed, config.secondary_text, "below", config.font, config.output_size // 16
             )
 
-    # Stage 4: Ink effects
+    # Stage 4: Stamp roughness (distresses borders, text, and image equally)
+    composed = apply_stamp_roughness(composed, config.wear)
+
+    # Stage 5: Ink effects
     composed = colorize(composed, config.color)
     composed = apply_ink_texture(composed, config.ink_density)
     composed = apply_wear(composed, config.wear)
     composed = apply_edge_bleed(composed, config.edge_bleed)
 
-    # Stage 5: Background
+    # Stage 6: Background
     if config.background == "white":
         bg = Image.new("RGBA", composed.size, (255, 255, 255, 255))
         bg = Image.alpha_composite(bg, composed)

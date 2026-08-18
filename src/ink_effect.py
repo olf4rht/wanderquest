@@ -1,6 +1,53 @@
 from __future__ import annotations
+import cv2
 import numpy as np
 from PIL import Image, ImageFilter
+
+
+def apply_stamp_roughness(img: Image.Image, intensity: float = 0.5) -> Image.Image:
+    """Distress all linework to look hand-stamped. Adds edge roughness,
+    small gaps, and uneven pressure to borders, text, and image alike."""
+    arr = np.array(img)
+    h, w = arr.shape[:2]
+    alpha = arr[:, :, 3].astype(np.float32)
+
+    # 1. Edge roughness: erode/dilate with a noisy kernel to make edges irregular
+    rng = np.random.RandomState(77)
+    ink_binary = (alpha > 128).astype(np.uint8) * 255
+
+    # Small random erosion to create gaps at edges
+    kernel_size = max(2, int(2 + intensity * 2))
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
+    eroded = cv2.erode(ink_binary, kernel, iterations=1)
+
+    # Random noise mask — some eroded pixels stay, some don't
+    noise = rng.rand(h, w)
+    # Keep original where noise is above threshold (preserves most of the stamp)
+    restore_mask = noise > (intensity * 0.4)
+    roughened = np.where(restore_mask, ink_binary, eroded)
+
+    # 2. Add fine-grain noise to simulate paper texture breaking through ink
+    fine_noise = rng.rand(h, w)
+    # Only knock out pixels that are ink AND where noise is very low
+    knockout = fine_noise < (intensity * 0.08)
+    roughened[knockout & (roughened > 128)] = 0
+
+    # 3. Slight displacement to simulate uneven rubber contact
+    displacement_strength = max(1, int(intensity * 3))
+    dx = (rng.rand(h, w) * 2 - 1) * displacement_strength
+    dy = (rng.rand(h, w) * 2 - 1) * displacement_strength
+    # Apply displacement via remap
+    map_x = np.clip(np.arange(w)[None, :] + dx, 0, w - 1).astype(np.float32)
+    map_y = np.clip(np.arange(h)[:, None] + dy, 0, h - 1).astype(np.float32)
+    roughened = cv2.remap(roughened, map_x, map_y, cv2.INTER_LINEAR)
+
+    # Apply roughened alpha back
+    result = arr.copy()
+    # Blend: where ink was removed, reduce alpha
+    new_alpha = np.minimum(alpha, roughened.astype(np.float32))
+    result[:, :, 3] = new_alpha.clip(0, 255).astype(np.uint8)
+
+    return Image.fromarray(result, mode="RGBA")
 
 
 def colorize(img: Image.Image, color: tuple[int, int, int]) -> Image.Image:
