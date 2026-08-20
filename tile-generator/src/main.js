@@ -64,11 +64,13 @@ State.subscribe(s => {
   if (s.engine === 'draw') {
     DrawEngine.render(s);
     DrawEngine.renderReference(s);
+    DrawEngine.renderDomainGuide(s);
   } else {
     MathEngine.render(s, symbolG);
-    // Hide reference in math mode
-    const hiddenRefState = { ...s, draw: { ...s.draw, reference: { ...s.draw.reference, visible: false } } };
+    // Hide reference and domain guide in math mode
+    const hiddenRefState = { ...s, draw: { ...s.draw, reference: { ...s.draw.reference, visible: false, showDomain: false } } };
     DrawEngine.renderReference(hiddenRefState);
+    DrawEngine.renderDomainGuide(hiddenRefState);
   }
   syncUI(s);
 });
@@ -87,10 +89,12 @@ on('smoothing', 'input', e => { val('smooth-val', e.target.value); State.merge('
 
 document.getElementById('btn-brush').addEventListener('click', () => {
   DrawEngine.setTool('brush');
+  DrawEngine.setRefMoveMode(false);
   updateToolButtons();
 });
 document.getElementById('btn-erase').addEventListener('click', () => {
   DrawEngine.setTool('erase');
+  DrawEngine.setRefMoveMode(false);
   updateToolButtons();
 });
 document.getElementById('btn-undo').addEventListener('click', () => DrawEngine.undo());
@@ -153,11 +157,23 @@ on('ref-desaturate', 'change', e => {
   const ref = State.get().draw.reference;
   State.merge('draw', { reference: { ...ref, desaturate: e.target.checked } });
 });
+on('ref-show-domain', 'change', e => {
+  const ref = State.get().draw.reference;
+  State.merge('draw', { reference: { ...ref, showDomain: e.target.checked } });
+});
+
+document.getElementById('btn-ref-move').addEventListener('click', () => {
+  const isActive = DrawEngine.getRefMoveMode();
+  DrawEngine.setRefMoveMode(!isActive);
+  document.getElementById('btn-ref-move').classList.toggle('active', !isActive);
+  svgEl.style.cursor = !isActive ? 'move' : 'crosshair';
+});
+
 function setRefControlsEnabled(enabled) {
   const ids = [
     'ref-visible', 'ref-locked', 'ref-opacity', 'ref-rotate',
-    'ref-scale', 'ref-fliph', 'ref-desaturate',
-    'btn-ref-replace', 'btn-ref-remove',
+    'ref-scale', 'ref-fliph', 'ref-desaturate', 'ref-show-domain',
+    'btn-ref-replace', 'btn-ref-remove', 'btn-ref-move',
   ];
   ids.forEach(id => {
     const el = document.getElementById(id);
@@ -613,6 +629,7 @@ function syncUI(s) {
   val('ref-scale-val', ref.scale);
   document.getElementById('ref-fliph').checked = ref.flipH;
   document.getElementById('ref-desaturate').checked = ref.desaturate;
+  document.getElementById('ref-show-domain').checked = ref.showDomain;
 
   updateToolButtons();
 }

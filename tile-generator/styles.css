@@ -330,6 +330,11 @@ body {
   font-style: italic;
   line-height: 1.4;
 }
+#btn-ref-move.active {
+  background: var(--active);
+  color: var(--active-fg);
+}
+
 /* ---- export buttons ---- */
 
 .export-grid {

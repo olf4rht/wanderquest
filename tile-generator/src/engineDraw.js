@@ -15,6 +15,11 @@ let tool = 'brush';
 let rafId = null;
 let dirty = false;
 
+// Move-reference mode
+let refMoveMode = false;
+let refDragStart = null;
+let refDragOrigin = null;
+
 export function init(svgEl, symG) {
   svg = svgEl;
   symbolG = symG;
@@ -51,6 +56,9 @@ export function destroy() {
 
 export function setTool(t) { tool = t; }
 export function getTool() { return tool; }
+
+export function setRefMoveMode(on) { refMoveMode = on; }
+export function getRefMoveMode() { return refMoveMode; }
 
 export function undo() {
   const s = State.get();
@@ -89,6 +97,18 @@ function toCenter(x, y) {
 
 function onDown(e) {
   if (State.get().engine !== 'draw') return;
+
+  // Move-reference mode
+  if (refMoveMode) {
+    const ref = State.get().draw.reference;
+    if (!ref.src || ref.locked) return;
+    svg.setPointerCapture(e.pointerId);
+    const [mx, my] = svgCoord(e);
+    refDragStart = { x: mx, y: my };
+    refDragOrigin = { x: ref.x, y: ref.y };
+    return;
+  }
+
   if (tool === 'erase') { eraseAt(e); return; }
 
   drawing = true;
@@ -122,6 +142,16 @@ function onDown(e) {
 }
 
 function onMove(e) {
+  // Move-reference mode
+  if (refMoveMode && refDragStart) {
+    const [mx, my] = svgCoord(e);
+    const dx = mx - refDragStart.x;
+    const dy = my - refDragStart.y;
+    const ref = State.get().draw.reference;
+    State.merge('draw', { reference: { ...ref, x: refDragOrigin.x + dx, y: refDragOrigin.y + dy } });
+    return;
+  }
+
   if (!drawing) return;
   const [sx, sy] = snap(...svgCoord(e));
   const p = toCenter(sx, sy);
@@ -163,6 +193,13 @@ function updateLiveStroke() {
 }
 
 function onUp() {
+  // Move-reference mode
+  if (refMoveMode && refDragStart) {
+    refDragStart = null;
+    refDragOrigin = null;
+    return;
+  }
+
   if (!drawing) return;
   drawing = false;
   if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
@@ -245,6 +282,104 @@ export function renderReference(s) {
 
   refLayerG.setAttribute('clip-path', 'url(#ref-clip)');
   refLayerG.appendChild(img);
+}
+
+// =========================================================
+// Render fundamental domain guide overlay
+// =========================================================
+
+export function renderDomainGuide(s) {
+  domainGuideG.innerHTML = '';
+  const ref = s.draw.reference;
+  if (!ref.showDomain || !ref.src) return;
+
+  const h = s.size / 2;
+  const sym = s.draw.symmetry;
+  const lineAttrs = {
+    stroke: '#1B3A8B',
+    'stroke-opacity': '0.2',
+    'stroke-width': '1.5',
+    'stroke-dasharray': '6,4',
+    fill: 'none',
+  };
+
+  function makeLine(x1, y1, x2, y2) {
+    const l = document.createElementNS(NS, 'line');
+    l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+    l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+    for (const [k, v] of Object.entries(lineAttrs)) l.setAttribute(k, v);
+    domainGuideG.appendChild(l);
+  }
+
+  function makeWedgePath(d) {
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('d', d);
+    p.setAttribute('fill', '#1B3A8B');
+    p.setAttribute('fill-opacity', '0.05');
+    domainGuideG.appendChild(p);
+  }
+
+  // Helper: point on circle at angle (0 = right, angles in radians)
+  function pt(angle, r) {
+    return [h + r * Math.cos(angle), h + r * Math.sin(angle)];
+  }
+
+  const r = h; // radius to edge
+
+  if (sym === 'mirror') {
+    // Vertical axis
+    makeLine(h, 0, h, s.size);
+    // Left half is the domain
+    makeWedgePath(`M${h},0 L0,0 L0,${s.size} L${h},${s.size} Z`);
+
+  } else if (sym === 'rot4') {
+    // Cross: vertical + horizontal
+    makeLine(h, 0, h, s.size);
+    makeLine(0, h, s.size, h);
+    // Top-right 90deg wedge (12 o'clock to 3 o'clock)
+    makeWedgePath(`M${h},${h} L${h},0 L${s.size},0 L${s.size},${h} Z`);
+
+  } else if (sym === 'rot6') {
+    // 6 radial lines
+    for (let i = 0; i < 6; i++) {
+      const angle = -Math.PI / 2 + i * (Math.PI / 3);
+      const [ex, ey] = pt(angle, r);
+      makeLine(h, h, ex, ey);
+    }
+    // 60deg wedge from 12 o'clock
+    const a0 = -Math.PI / 2;
+    const a1 = a0 + Math.PI / 3;
+    const [x0, y0] = pt(a0, r);
+    const [x1, y1] = pt(a1, r);
+    makeWedgePath(`M${h},${h} L${x0},${y0} L${x1},${y1} Z`);
+
+  } else if (sym === 'rot8') {
+    // 8 radial lines
+    for (let i = 0; i < 8; i++) {
+      const angle = -Math.PI / 2 + i * (Math.PI / 4);
+      const [ex, ey] = pt(angle, r);
+      makeLine(h, h, ex, ey);
+    }
+    // 45deg wedge from 12 o'clock
+    const a0 = -Math.PI / 2;
+    const a1 = a0 + Math.PI / 4;
+    const [x0, y0] = pt(a0, r);
+    const [x1, y1] = pt(a1, r);
+    makeWedgePath(`M${h},${h} L${x0},${y0} L${x1},${y1} Z`);
+
+  } else if (sym === 'd4') {
+    // Cross + diagonals (4 axes = 8 lines)
+    makeLine(h, 0, h, s.size);
+    makeLine(0, h, s.size, h);
+    makeLine(0, 0, s.size, s.size);
+    makeLine(s.size, 0, 0, s.size);
+    // 45deg wedge from 12 o'clock
+    const a0 = -Math.PI / 2;
+    const a1 = a0 + Math.PI / 4;
+    const [x0, y0] = pt(a0, r);
+    const [x1, y1] = pt(a1, r);
+    makeWedgePath(`M${h},${h} L${x0},${y0} L${x1},${y1} Z`);
+  }
 }
 
 // =========================================================
