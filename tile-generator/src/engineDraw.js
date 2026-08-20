@@ -3,7 +3,7 @@
 
 import * as State from './state.js';
 import { transformsFor, apply } from './symmetry.js';
-import { binarize, cleanMask, traceContours, rdp as imgRdp } from './imageTile.js';
+import { binarize, cleanMask, traceContours, rdp } from './imageTile.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -408,8 +408,8 @@ function clipMaskToDomain(mask, w, h, symmetry) {
           keep = x <= cx;
           break;
         case 'rot4':
-          // 90° wedge from 12 o'clock: angle in [-PI/2, 0]
-          keep = angle >= -Math.PI / 2 && angle <= 0;
+          // Top-right quadrant (matches rectangular guide visual)
+          keep = dx >= 0 && dy <= 0;
           break;
         case 'rot6':
           // 60° wedge from 12 o'clock: angle in [-PI/2, -PI/2 + PI/3]
@@ -428,6 +428,27 @@ function clipMaskToDomain(mask, w, h, symmetry) {
     }
   }
   return mask;
+}
+
+/**
+ * Catmull-Rom interpolation on a closed contour to produce smoother points.
+ * Inserts midpoints along each segment using cubic Bézier control points.
+ */
+function smoothContourPoints(pts) {
+  const n = pts.length;
+  const result = [];
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n];
+    const p1 = pts[i];
+    const p2 = pts[(i + 1) % n];
+    const p3 = pts[(i + 2) % n];
+    result.push(p1);
+    // Insert midpoint using Catmull-Rom
+    const mx = 0.5 * (2 * p1[0] + (-p0[0] + p2[0]) * 0.5 + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * 0.25 + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * 0.125);
+    const my = 0.5 * (2 * p1[1] + (-p0[1] + p2[1]) * 0.5 + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * 0.25 + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * 0.125);
+    result.push([mx, my]);
+  }
+  return result;
 }
 
 export async function autoTrace(opts = {}) {
@@ -471,7 +492,7 @@ export async function autoTrace(opts = {}) {
   if (contours.length === 0) return null;
 
   const eps = 0.3 + (100 - detail) * 0.06;
-  const simplified = contours.map(c => imgRdp(c, eps)).filter(c => c.length >= 3);
+  const simplified = contours.map(c => rdp(c, eps)).filter(c => c.length >= 3);
   if (simplified.length === 0) return null;
 
   // Convert pixel-space contours to center-relative SVG-space stroke objects
@@ -480,10 +501,14 @@ export async function autoTrace(opts = {}) {
   const strokeWidth = s.draw.strokeWidth;
 
   const strokes = simplified.map(contour => {
-    const points = contour.map(([px, py]) => [
+    let points = contour.map(([px, py]) => [
       (px / w) * size - half,
       (py / h) * size - half,
     ]);
+    // Apply Catmull-Rom smoothing to densify contour points
+    if (smooth && points.length >= 3) {
+      points = smoothContourPoints(points);
+    }
     return {
       points,
       w: strokeWidth,
@@ -600,37 +625,3 @@ function smoothPath(points, solid, strokeWidth) {
 }
 
 function f(n) { return n.toFixed(1); }
-
-/**
- * Ramer-Douglas-Peucker point thinning.
- * Removes points that contribute less than epsilon to the shape.
- */
-function rdp(points, epsilon) {
-  if (points.length <= 2) return points;
-
-  const [sx, sy] = points[0];
-  const [ex, ey] = points[points.length - 1];
-  const dx = ex - sx, dy = ey - sy;
-  const lenSq = dx * dx + dy * dy;
-  let maxDist = 0, maxIdx = 0;
-
-  for (let i = 1; i < points.length - 1; i++) {
-    const [px, py] = points[i];
-    let dist;
-    if (lenSq === 0) {
-      dist = Math.hypot(px - sx, py - sy);
-    } else {
-      // Perpendicular distance to line segment
-      const t = Math.max(0, Math.min(1, ((px - sx) * dx + (py - sy) * dy) / lenSq));
-      dist = Math.hypot(px - (sx + t * dx), py - (sy + t * dy));
-    }
-    if (dist > maxDist) { maxDist = dist; maxIdx = i; }
-  }
-
-  if (maxDist > epsilon) {
-    const left = rdp(points.slice(0, maxIdx + 1), epsilon);
-    const right = rdp(points.slice(maxIdx), epsilon);
-    return [...left.slice(0, -1), ...right];
-  }
-  return [points[0], points[points.length - 1]];
-}
