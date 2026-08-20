@@ -273,7 +273,14 @@ on('distress', 'input', e => {
 document.getElementById('btn-copy-png').addEventListener('click', () => copyPNG(svgEl, State.get().size));
 document.getElementById('btn-export-svg').addEventListener('click', () => exportSVG(svgEl));
 document.getElementById('btn-export-png').addEventListener('click', () => exportPNG(svgEl, State.get().size));
-document.getElementById('btn-save-json').addEventListener('click', () => saveJSON(State.snapshot()));
+document.getElementById('btn-save-json').addEventListener('click', () => {
+  const snap = State.snapshot();
+  const includeRef = document.getElementById('save-include-ref').checked;
+  if (!includeRef && snap.draw && snap.draw.reference) {
+    snap.draw.reference = { ...snap.draw.reference, src: null };
+  }
+  saveJSON(snap);
+});
 document.getElementById('btn-load-json').addEventListener('click', () => {
   document.getElementById('json-input').click();
 });
@@ -282,6 +289,12 @@ document.getElementById('json-input').addEventListener('change', async e => {
   if (!f) return;
   try {
     const loaded = await loadJSON(f);
+    if (loaded.draw && !loaded.draw.reference) {
+      loaded.draw.reference = {
+        src: null, visible: true, opacity: 0.35, rotate: 0, scale: 1,
+        x: 0, y: 0, flipH: false, desaturate: true, showDomain: true, locked: false,
+      };
+    }
     State.init(loaded);
   } catch (err) {
     console.error('Failed to load JSON:', err);
@@ -697,6 +710,25 @@ function updateToolButtons() {
 function on(id, evt, fn) { document.getElementById(id).addEventListener(evt, fn); }
 function val(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
 function int(v) { return parseInt(v, 10); }
+
+// ---- Drag-drop reference on canvas ----
+svgEl.parentElement.addEventListener('dragover', e => {
+  if (State.get().engine !== 'draw') return;
+  e.preventDefault();
+  svgEl.parentElement.classList.add('ref-drag-over');
+});
+svgEl.parentElement.addEventListener('dragleave', () => {
+  svgEl.parentElement.classList.remove('ref-drag-over');
+});
+svgEl.parentElement.addEventListener('drop', e => {
+  svgEl.parentElement.classList.remove('ref-drag-over');
+  if (State.get().engine !== 'draw') return;
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    loadReferenceImage(file);
+  }
+});
 
 // ---- Boot ----
 State.init(INITIAL);
