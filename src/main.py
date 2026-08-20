@@ -11,6 +11,9 @@ app = FastAPI(title="WanderQuest Stamp Generator")
 app.include_router(stamp_router)
 
 static_dir = os.path.join(os.path.dirname(__file__), "..", "static")
+tile_dir = os.path.join(os.path.dirname(__file__), "..", "tile-generator")
+
+app.mount("/tile-generator", StaticFiles(directory=tile_dir, html=True), name="tile-generator")
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 
