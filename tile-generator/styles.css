@@ -1,0 +1,353 @@
+/* Tile-Symbol Generator — minimal monospace editor UI */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #1e1e1e;
+  --panel:    #f7f6f3;
+  --panel-border: #d9d5cc;
+  --label:    #555;
+  --text:     #222;
+  --accent:   #1B3A8B;
+  --btn-bg:   #eae7e0;
+  --btn-hover:#ddd9d0;
+  --active:   #1B3A8B;
+  --active-fg:#fff;
+  --mono:     "SF Mono", "Cascadia Code", "Consolas", "Menlo", monospace;
+  --sans:     -apple-system, system-ui, sans-serif;
+}
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- layout ---- */
+
+.app {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.preview {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: var(--bg);
+}
+
+.preview svg {
+  max-width: 100%;
+  max-height: calc(100vh - 64px);
+  border-radius: 4px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.4);
+}
+
+.panel {
+  width: 300px;
+  min-width: 300px;
+  background: var(--panel);
+  border-left: 1px solid var(--panel-border);
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+/* ---- sections ---- */
+
+.section {
+  border-bottom: 1px solid var(--panel-border);
+  padding: 14px 16px;
+}
+
+.section-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--label);
+  margin-bottom: 10px;
+}
+
+/* ---- labels ---- */
+
+.ctrl-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--label);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 4px;
+  margin-top: 10px;
+}
+
+.ctrl-label:first-child { margin-top: 0; }
+
+.ctrl-val {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+  background: var(--btn-bg);
+  padding: 1px 5px;
+  border-radius: 3px;
+  min-width: 2em;
+  text-align: right;
+}
+
+/* ---- engine toggle ---- */
+
+.toggle-group {
+  display: flex;
+  gap: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--panel-border);
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 7px 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  background: var(--btn-bg);
+  color: var(--label);
+  transition: background .12s, color .12s;
+}
+
+.toggle-btn:not(:last-child) {
+  border-right: 1px solid var(--panel-border);
+}
+
+.toggle-btn:hover { background: var(--btn-hover); }
+.toggle-btn.active { background: var(--active); color: var(--active-fg); }
+
+/* ---- controls ---- */
+
+.ctrl-select {
+  width: 100%;
+  padding: 5px 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.ctrl-range {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--panel-border);
+  border-radius: 2px;
+  outline: none;
+  margin: 4px 0 2px;
+}
+
+.ctrl-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--active);
+  border: 2px solid #fff;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+
+.ctrl-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--active);
+  border: 2px solid #fff;
+  cursor: pointer;
+}
+
+.ctrl-check {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--active);
+  cursor: pointer;
+}
+
+.ctrl-color {
+  width: 100%;
+  height: 28px;
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  padding: 1px;
+  cursor: pointer;
+  background: #fff;
+}
+
+/* ---- tool buttons ---- */
+
+.tool-group {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.ctrl-btn {
+  padding: 5px 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  background: var(--btn-bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: background .12s;
+}
+
+.ctrl-btn:hover { background: var(--btn-hover); }
+.ctrl-btn.active { background: var(--active); color: var(--active-fg); border-color: var(--active); }
+.ctrl-btn.sm { padding: 3px 7px; font-size: 12px; line-height: 1; }
+
+/* ---- legend editor ---- */
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.legend-idx {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--label);
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.legend-select { flex: 1; font-size: 10px; padding: 3px 4px; }
+.legend-ink { width: 56px; flex: none; font-size: 10px; padding: 3px 4px; }
+
+/* ---- image tile panel ---- */
+
+.it-panel {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  background: #fff;
+}
+
+.it-drop {
+  padding: 16px 8px;
+  border: 2px dashed var(--panel-border);
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--label);
+  transition: border-color .15s, background .15s;
+}
+
+.it-drop:hover, .it-drop.drag {
+  border-color: var(--accent);
+  background: rgba(27, 58, 139, .05);
+}
+
+.it-error {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #c33;
+  margin-top: 6px;
+  text-align: center;
+}
+
+.it-controls .ctrl-label { margin-top: 8px; }
+.it-controls .ctrl-label:first-child { margin-top: 6px; }
+
+/* ---- custom tile tray ---- */
+
+.custom-tray {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.custom-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px;
+  background: var(--btn-bg);
+  border-radius: 3px;
+}
+
+.custom-chip svg { flex-shrink: 0; }
+
+.custom-chip-label {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--label);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- reference controls ---- */
+
+.ref-upload-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.ref-upload-row .ctrl-btn { flex: 1; font-size: 11px; }
+.ref-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--label);
+  font-style: italic;
+  line-height: 1.4;
+}
+/* ---- export buttons ---- */
+
+.export-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.export-grid .ctrl-btn {
+  text-align: center;
+  font-size: 10px;
+  padding: 6px 4px;
+}
+
+/* ---- responsive ---- */
+
+@media (max-width: 768px) {
+  .app { flex-direction: column; }
+  .panel { width: 100%; min-width: 0; max-height: none; border-left: none; border-top: 1px solid var(--panel-border); }
+  .preview { padding: 16px; }
+}

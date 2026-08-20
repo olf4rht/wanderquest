@@ -199,6 +199,55 @@ function eraseAt(e) {
 }
 
 // =========================================================
+// Render reference image
+// =========================================================
+
+export function renderReference(s) {
+  refLayerG.innerHTML = '';
+  const ref = s.draw.reference;
+  if (!ref.src || !ref.visible) return;
+
+  const h = s.size / 2;
+  const defs = svg.querySelector('defs');
+
+  // Ensure clip path exists
+  let clip = defs.querySelector('#ref-clip');
+  if (!clip) {
+    clip = document.createElementNS(NS, 'clipPath');
+    clip.setAttribute('id', 'ref-clip');
+    const clipRect = document.createElementNS(NS, 'rect');
+    clipRect.setAttribute('x', '0');
+    clipRect.setAttribute('y', '0');
+    clipRect.setAttribute('width', s.size);
+    clipRect.setAttribute('height', s.size);
+    clip.appendChild(clipRect);
+    defs.appendChild(clip);
+  }
+
+  const img = document.createElementNS(NS, 'image');
+  img.setAttribute('href', ref.src);
+  img.setAttribute('width', s.size);
+  img.setAttribute('height', s.size);
+  img.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  img.setAttribute('opacity', ref.opacity);
+
+  const flipH = ref.flipH ? -ref.scale : ref.scale;
+  const scaleY = ref.scale;
+  const tx = ref.x + h;
+  const ty = ref.y + h;
+  img.setAttribute('transform',
+    `translate(${tx},${ty}) rotate(${ref.rotate}) scale(${flipH},${scaleY}) translate(${-h},${-h})`
+  );
+
+  if (ref.desaturate) {
+    img.setAttribute('filter', 'saturate(0)');
+  }
+
+  refLayerG.setAttribute('clip-path', 'url(#ref-clip)');
+  refLayerG.appendChild(img);
+}
+
+// =========================================================
 // Render committed strokes (called from state subscriber)
 // =========================================================
 

@@ -63,8 +63,12 @@ State.subscribe(s => {
   compose(svgEl, s);
   if (s.engine === 'draw') {
     DrawEngine.render(s);
+    DrawEngine.renderReference(s);
   } else {
     MathEngine.render(s, symbolG);
+    // Hide reference in math mode
+    const hiddenRefState = { ...s, draw: { ...s.draw, reference: { ...s.draw.reference, visible: false } } };
+    DrawEngine.renderReference(hiddenRefState);
   }
   syncUI(s);
 });
@@ -91,6 +95,75 @@ document.getElementById('btn-erase').addEventListener('click', () => {
 });
 document.getElementById('btn-undo').addEventListener('click', () => DrawEngine.undo());
 document.getElementById('btn-clear').addEventListener('click', () => DrawEngine.clear());
+
+// ---- Wire: reference controls ----
+const refFileInput = document.getElementById('ref-file-input');
+
+document.getElementById('btn-ref-upload').addEventListener('click', () => refFileInput.click());
+document.getElementById('btn-ref-replace').addEventListener('click', () => refFileInput.click());
+
+document.getElementById('btn-ref-remove').addEventListener('click', () => {
+  const ref = State.get().draw.reference;
+  State.merge('draw', { reference: { ...ref, src: null } });
+});
+
+refFileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) loadReferenceImage(file);
+  e.target.value = '';
+});
+
+function loadReferenceImage(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const ref = State.get().draw.reference;
+    State.merge('draw', { reference: { ...ref, src: reader.result } });
+  };
+  reader.readAsDataURL(file);
+}
+
+on('ref-visible', 'change', e => {
+  const ref = State.get().draw.reference;
+  State.merge('draw', { reference: { ...ref, visible: e.target.checked } });
+});
+on('ref-locked', 'change', e => {
+  const ref = State.get().draw.reference;
+  State.merge('draw', { reference: { ...ref, locked: e.target.checked } });
+});
+on('ref-opacity', 'input', e => {
+  val('ref-opacity-val', e.target.value);
+  const ref = State.get().draw.reference;
+  State.merge('draw', { reference: { ...ref, opacity: parseFloat(e.target.value) } });
+});
+on('ref-rotate', 'input', e => {
+  val('ref-rotate-val', e.target.value);
+  const ref = State.get().draw.reference;
+  State.merge('draw', { reference: { ...ref, rotate: int(e.target.value) } });
+});
+on('ref-scale', 'input', e => {
+  val('ref-scale-val', e.target.value);
+  const ref = State.get().draw.reference;
+  State.merge('draw', { reference: { ...ref, scale: parseFloat(e.target.value) } });
+});
+on('ref-fliph', 'change', e => {
+  const ref = State.get().draw.reference;
+  State.merge('draw', { reference: { ...ref, flipH: e.target.checked } });
+});
+on('ref-desaturate', 'change', e => {
+  const ref = State.get().draw.reference;
+  State.merge('draw', { reference: { ...ref, desaturate: e.target.checked } });
+});
+function setRefControlsEnabled(enabled) {
+  const ids = [
+    'ref-visible', 'ref-locked', 'ref-opacity', 'ref-rotate',
+    'ref-scale', 'ref-fliph', 'ref-desaturate',
+    'btn-ref-replace', 'btn-ref-remove',
+  ];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !enabled;
+  });
+}
 
 // ---- Wire: math controls ----
 on('grid-n', 'input', e => { val('n-val', e.target.value); State.merge('math', { N: int(e.target.value) }); });
@@ -525,6 +598,21 @@ function syncUI(s) {
 
   // Legend
   buildLegend(s);
+
+  // Reference controls
+  const ref = s.draw.reference;
+  const hasRef = !!ref.src;
+  setRefControlsEnabled(hasRef);
+  document.getElementById('ref-visible').checked = ref.visible;
+  document.getElementById('ref-locked').checked = ref.locked;
+  document.getElementById('ref-opacity').value = ref.opacity;
+  val('ref-opacity-val', ref.opacity);
+  document.getElementById('ref-rotate').value = ref.rotate;
+  val('ref-rotate-val', ref.rotate);
+  document.getElementById('ref-scale').value = ref.scale;
+  val('ref-scale-val', ref.scale);
+  document.getElementById('ref-fliph').checked = ref.flipH;
+  document.getElementById('ref-desaturate').checked = ref.desaturate;
 
   updateToolButtons();
 }

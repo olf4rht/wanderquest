@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tile Symbol Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== PREVIEW ===== -->
+  <div class="preview">
+    <svg id="canvas" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" width="720" height="720">
+      <defs></defs>
+      <rect id="bg-rect" x="0" y="0" width="720" height="720" fill="#F4F1E9"/>
+      <g id="symbol"></g>
+    </svg>
+  </div>
+
+  <!-- ===== PANEL ===== -->
+  <div class="panel">
+
+    <!-- Engine -->
+    <div class="section">
+      <div class="section-title">Engine</div>
+      <div class="toggle-group">
+        <button class="toggle-btn active" data-engine="draw">Draw</button>
+        <button class="toggle-btn" data-engine="math">Math</button>
+      </div>
+    </div>
+
+    <!-- Draw controls -->
+    <div class="section" id="draw-controls">
+      <div class="section-title">Draw</div>
+
+      <div class="ctrl-label">Symmetry</div>
+      <select id="symmetry" class="ctrl-select">
+        <option value="mirror">Mirror</option>
+        <option value="rot4">4-fold Rotation</option>
+        <option value="rot6">6-fold Rotation</option>
+        <option value="rot8">8-fold Rotation</option>
+        <option value="d4" selected>Dihedral-4 (kaleidoscope)</option>
+      </select>
+
+      <div class="ctrl-label">Grid <span class="ctrl-val" id="grid-val">OFF</span></div>
+      <input type="range" id="grid" min="0" max="96" value="0" step="4" class="ctrl-range">
+
+      <div class="ctrl-label">Stroke width <span class="ctrl-val" id="sw-val">14</span></div>
+      <input type="range" id="stroke-width" min="2" max="40" value="14" step="1" class="ctrl-range">
+
+      <div class="ctrl-label">Smoothing <span class="ctrl-val" id="smooth-val">40</span></div>
+      <input type="range" id="smoothing" min="0" max="100" value="40" step="5" class="ctrl-range">
+
+      <div class="ctrl-label">
+        Solid fill
+        <input type="checkbox" id="solid" checked class="ctrl-check">
+      </div>
+
+      <div class="tool-group">
+        <button class="ctrl-btn active" id="btn-brush">Brush</button>
+        <button class="ctrl-btn" id="btn-erase">Erase</button>
+        <button class="ctrl-btn" id="btn-undo">Undo</button>
+        <button class="ctrl-btn" id="btn-clear">Clear</button>
+      </div>
+
+      <!-- Reference image -->
+      <div class="section" id="ref-controls">
+        <div class="section-title">Reference</div>
+
+        <div class="ref-upload-row">
+          <button class="ctrl-btn" id="btn-ref-upload">Image</button>
+          <button class="ctrl-btn" id="btn-ref-replace" disabled>Replace</button>
+          <button class="ctrl-btn" id="btn-ref-remove" disabled>Remove</button>
+          <input type="file" id="ref-file-input" accept="image/*" hidden>
+        </div>
+
+        <div class="ctrl-label">
+          Visible
+          <input type="checkbox" id="ref-visible" checked class="ctrl-check" disabled>
+        </div>
+
+        <div class="ctrl-label">
+          Lock
+          <input type="checkbox" id="ref-locked" class="ctrl-check" disabled>
+        </div>
+
+        <div class="ctrl-label">Opacity <span class="ctrl-val" id="ref-opacity-val">0.35</span></div>
+        <input type="range" id="ref-opacity" min="0.05" max="1" value="0.35" step="0.05" class="ctrl-range" disabled>
+
+        <div class="ctrl-label">Rotate <span class="ctrl-val" id="ref-rotate-val">0</span></div>
+        <input type="range" id="ref-rotate" min="-180" max="180" value="0" step="5" class="ctrl-range" disabled>
+
+        <div class="ctrl-label">Scale <span class="ctrl-val" id="ref-scale-val">1</span></div>
+        <input type="range" id="ref-scale" min="0.25" max="4" value="1" step="0.05" class="ctrl-range" disabled>
+
+        <div class="ctrl-label">
+          Flip H
+          <input type="checkbox" id="ref-fliph" class="ctrl-check" disabled>
+        </div>
+
+        <div class="ctrl-label">
+          Desaturate
+          <input type="checkbox" id="ref-desaturate" checked class="ctrl-check" disabled>
+        </div>
+
+        <div class="ref-hint">Upload a reference image to trace over.</div>
+      </div>
+    </div>
+
+    <!-- Math controls -->
+    <div class="section" id="math-controls" hidden>
+      <div class="section-title">Math</div>
+
+      <div class="ctrl-label">Grid N <span class="ctrl-val" id="n-val">6</span></div>
+      <input type="range" id="grid-n" min="2" max="24" value="6" step="1" class="ctrl-range">
+
+      <div class="ctrl-label">Rule</div>
+      <select id="rule" class="ctrl-select">
+        <option value="mod_add">Mod-Add</option>
+        <option value="rotation">Rotation</option>
+        <option value="checker">Checker</option>
+        <option value="substitution">Substitution</option>
+      </select>
+
+      <div class="ctrl-label">Rot step <span class="ctrl-val" id="rs-val">1</span></div>
+      <input type="range" id="rot-step" min="1" max="4" value="1" step="1" class="ctrl-range">
+
+      <button class="ctrl-btn" id="btn-reroll" style="margin-top:8px;width:100%">Reroll</button>
+
+      <div class="ctrl-label" style="margin-top:12px">Legend</div>
+      <div id="legend-entries"></div>
+    </div>
+
+    <!-- Palette -->
+    <div class="section">
+      <div class="section-title">Palette</div>
+
+      <div class="ctrl-label">Primary ink</div>
+      <input type="color" id="ink-0" value="#1B3A8B" class="ctrl-color">
+
+      <div class="ctrl-label">Secondary ink</div>
+      <input type="color" id="ink-1" value="#1B3A8B" class="ctrl-color">
+
+      <div class="ctrl-label">Background</div>
+      <input type="color" id="bg-color" value="#F4F1E9" class="ctrl-color">
+    </div>
+
+    <!-- Texture -->
+    <div class="section">
+      <div class="section-title">Texture</div>
+
+      <div class="ctrl-label">
+        Ink texture
+        <input type="checkbox" id="texture-on" checked class="ctrl-check">
+      </div>
+
+      <div class="ctrl-label">Distress <span class="ctrl-val" id="dist-val">45</span></div>
+      <input type="range" id="distress" min="0" max="100" value="45" step="1" class="ctrl-range">
+    </div>
+
+    <!-- Export -->
+    <div class="section">
+      <div class="section-title">Export</div>
+      <div class="export-grid">
+        <button class="ctrl-btn" id="btn-copy-png">Copy PNG</button>
+        <button class="ctrl-btn" id="btn-export-png">Export PNG</button>
+        <button class="ctrl-btn" id="btn-export-svg">Export SVG</button>
+        <button class="ctrl-btn" id="btn-save-json">Save JSON</button>
+        <button class="ctrl-btn" id="btn-load-json" style="grid-column:span 2">Load JSON</button>
+      </div>
+      <input type="file" id="json-input" accept=".json" hidden>
+    </div>
+
+  </div>
+</div>
+
+<script type="module" src="src/main.js"></script>
+
+</body>
+</html>
