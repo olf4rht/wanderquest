@@ -169,6 +169,58 @@ document.getElementById('btn-ref-move').addEventListener('click', () => {
   svgEl.style.cursor = !isActive ? 'move' : 'crosshair';
 });
 
+// ---- Wire: trace controls ----
+const traceControlIds = [
+  'btn-auto-trace', 'trace-mode', 'trace-threshold', 'trace-invert',
+  'trace-keep-holes', 'trace-detail', 'trace-smooth', 'trace-fold',
+  'btn-retrace', 'btn-clear-trace',
+];
+
+function setTraceControlsEnabled(enabled) {
+  traceControlIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !enabled;
+  });
+}
+
+function getTraceOpts() {
+  return {
+    threshold: int(document.getElementById('trace-threshold').value),
+    invert: document.getElementById('trace-invert').checked,
+    keepHoles: document.getElementById('trace-keep-holes').checked,
+    detail: int(document.getElementById('trace-detail').value),
+    smooth: document.getElementById('trace-smooth').checked,
+    traceMode: document.getElementById('trace-mode').value,
+    foldWithSymmetry: document.getElementById('trace-fold').checked,
+  };
+}
+
+async function runTrace() {
+  const traceErr = document.getElementById('trace-error');
+  traceErr.style.display = 'none';
+
+  // Remove previous trace strokes before re-tracing
+  DrawEngine.clearTrace();
+
+  const strokes = await DrawEngine.autoTrace(getTraceOpts());
+  if (!strokes || strokes.length === 0) {
+    traceErr.textContent = "Couldn't trace a clear shape — adjust Threshold/Invert.";
+    traceErr.style.display = '';
+    return;
+  }
+
+  // Add traced strokes to state
+  const s = State.get();
+  State.merge('draw', { strokes: [...s.draw.strokes, ...strokes] });
+}
+
+document.getElementById('btn-auto-trace').addEventListener('click', runTrace);
+document.getElementById('btn-retrace').addEventListener('click', runTrace);
+document.getElementById('btn-clear-trace').addEventListener('click', () => DrawEngine.clearTrace());
+
+on('trace-threshold', 'input', e => val('trace-thresh-val', e.target.value));
+on('trace-detail', 'input', e => val('trace-detail-val', e.target.value));
+
 function setRefControlsEnabled(enabled) {
   const ids = [
     'ref-visible', 'ref-locked', 'ref-opacity', 'ref-rotate',
@@ -619,6 +671,7 @@ function syncUI(s) {
   const ref = s.draw.reference;
   const hasRef = !!ref.src;
   setRefControlsEnabled(hasRef);
+  setTraceControlsEnabled(hasRef);
   document.getElementById('ref-visible').checked = ref.visible;
   document.getElementById('ref-locked').checked = ref.locked;
   document.getElementById('ref-opacity').value = ref.opacity;

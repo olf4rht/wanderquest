@@ -3,6 +3,7 @@
 
 import * as State from './state.js';
 import { transformsFor, apply } from './symmetry.js';
+import { binarize, cleanMask, traceContours, rdp as imgRdp } from './imageTile.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -383,6 +384,124 @@ export function renderDomainGuide(s) {
 }
 
 // =========================================================
+// Auto-trace: vectorize reference image into draw strokes
+// =========================================================
+
+function loadImage(src) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+function clipMaskToDomain(mask, w, h, symmetry) {
+  const cx = w / 2, cy = h / 2;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const dx = x - cx, dy = y - cy;
+      const angle = Math.atan2(dy, dx);
+      let keep = true;
+      switch (symmetry) {
+        case 'mirror':
+          keep = x <= cx;
+          break;
+        case 'rot4':
+          // 90° wedge from 12 o'clock: angle in [-PI/2, 0]
+          keep = angle >= -Math.PI / 2 && angle <= 0;
+          break;
+        case 'rot6':
+          // 60° wedge from 12 o'clock: angle in [-PI/2, -PI/2 + PI/3]
+          keep = angle >= -Math.PI / 2 && angle <= -Math.PI / 2 + Math.PI / 3;
+          break;
+        case 'rot8':
+          // 45° wedge from 12 o'clock: angle in [-PI/2, -PI/2 + PI/4]
+          keep = angle >= -Math.PI / 2 && angle <= -Math.PI / 2 + Math.PI / 4;
+          break;
+        case 'd4':
+          // 45° wedge from 12 o'clock
+          keep = angle >= -Math.PI / 2 && angle <= -Math.PI / 2 + Math.PI / 4;
+          break;
+      }
+      if (!keep) mask[y * w + x] = 0;
+    }
+  }
+  return mask;
+}
+
+export async function autoTrace(opts = {}) {
+  const s = State.get();
+  const ref = s.draw.reference;
+  if (!ref.src) return null;
+
+  const {
+    threshold = 128, invert = false, keepHoles = false,
+    detail = 50, smooth = false, traceMode = 'silhouette',
+    foldWithSymmetry = false,
+  } = opts;
+
+  const img = await loadImage(ref.src);
+  if (!img) return null;
+
+  // Rasterize to canvas (max 256px, preserving aspect ratio)
+  const maxDim = 256;
+  const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+  const w = Math.max(1, Math.round(img.naturalWidth * scale));
+  const h = Math.max(1, Math.round(img.naturalHeight * scale));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, w, h);
+  const imageData = ctx.getImageData(0, 0, w, h);
+
+  const mask = binarize(imageData, w, h, threshold, invert);
+
+  if (foldWithSymmetry) {
+    clipMaskToDomain(mask, w, h, s.draw.symmetry);
+  }
+
+  cleanMask(mask, w, h, keepHoles);
+
+  if (!mask.some(v => v)) return null;
+
+  const contours = traceContours(mask, w, h);
+  if (contours.length === 0) return null;
+
+  const eps = 0.3 + (100 - detail) * 0.06;
+  const simplified = contours.map(c => imgRdp(c, eps)).filter(c => c.length >= 3);
+  if (simplified.length === 0) return null;
+
+  // Convert pixel-space contours to center-relative SVG-space stroke objects
+  const size = s.size;
+  const half = size / 2;
+  const strokeWidth = s.draw.strokeWidth;
+
+  const strokes = simplified.map(contour => {
+    const points = contour.map(([px, py]) => [
+      (px / w) * size - half,
+      (py / h) * size - half,
+    ]);
+    return {
+      points,
+      w: strokeWidth,
+      fromTrace: true,
+      closed: true,
+      traceMode,
+    };
+  });
+
+  return strokes;
+}
+
+export function clearTrace() {
+  const s = State.get();
+  State.merge('draw', { strokes: s.draw.strokes.filter(st => !st.fromTrace) });
+}
+
+// =========================================================
 // Render committed strokes (called from state subscriber)
 // =========================================================
 
@@ -401,10 +520,16 @@ export function render(s) {
         return [tx + half, ty + half];
       });
 
-      const d = smoothPath(pts, s.draw.solid, stroke.w);
+      // Determine fill mode: trace strokes have their own mode
+      const isSilhouette = stroke.traceMode === 'silhouette';
+      const isOutline = stroke.traceMode === 'outline';
+      const useSolid = isSilhouette || (!isOutline && s.draw.solid);
+      const forceClosed = stroke.closed || isSilhouette;
+
+      const d = smoothPath(pts, forceClosed, stroke.w);
       const el = document.createElementNS(NS, 'path');
       el.setAttribute('d', d);
-      if (s.draw.solid) {
+      if (useSolid) {
         el.setAttribute('fill', s.inks[0]);
         el.setAttribute('stroke', 'none');
       } else {
