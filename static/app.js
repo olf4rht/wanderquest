@@ -1,4 +1,4 @@
-// static/app.js — WanderQuest Stamp Generator interactivity
+// static/app.js — WanderQuest Brand Configurator (API & generation logic)
 
 // ---------------------------------------------------------------------------
 // State
@@ -9,53 +9,23 @@ let currentBlobUrl = null;
 // ---------------------------------------------------------------------------
 // DOM references
 // ---------------------------------------------------------------------------
-const fileInput = document.getElementById('file-input');
-const uploadZone = document.getElementById('upload-zone');
-const uploadFilename = document.getElementById('upload-filename');
-const previewPlaceholder = document.getElementById('preview-placeholder');
-const previewImage = document.getElementById('preview-image');
-const previewContainer = document.getElementById('preview-container');
-const downloadBtn = document.getElementById('download-btn');
-
-// Controls
-const colorPicker = document.getElementById('color-picker');
-const primaryText = document.getElementById('primary-text');
-const secondaryText = document.getElementById('secondary-text');
-const fontSelect = document.getElementById('font-select');
-const textPlacement = document.getElementById('text-placement');
-const shapeSelect = document.getElementById('shape-select');
-const borderStyle = document.getElementById('border-style');
-const borderThickness = document.getElementById('border-thickness');
-const inkDensity = document.getElementById('ink-density');
-const wear = document.getElementById('wear');
-const edgeBleed = document.getElementById('edge-bleed');
-const backgroundToggle = document.getElementById('background-toggle');
-const lineThickness = document.getElementById('line-thickness');
-const subjectScale = document.getElementById('subject-scale');
-const thresholdLevel = document.getElementById('threshold-level');
-const thresholdEnabled = document.getElementById('threshold-enabled');
-const thresholdRow = document.getElementById('threshold-row');
-const edgeStrength = document.getElementById('edge-strength');
-const edgeEnabled = document.getElementById('edge-enabled');
-const edgeRow = document.getElementById('edge-row');
-const blackPoint = document.getElementById('black-point');
-const blackPointEnabled = document.getElementById('black-point-enabled');
-const blackPointRow = document.getElementById('black-point-row');
-const whitePoint = document.getElementById('white-point');
-const whitePointEnabled = document.getElementById('white-point-enabled');
-const whitePointRow = document.getElementById('white-point-row');
-const invertToggle = document.getElementById('invert-toggle');
-
-// All interactive controls (for enabling/disabling and wiring events)
-const allControls = [
-  colorPicker, primaryText, secondaryText, fontSelect, textPlacement,
-  shapeSelect, borderStyle, borderThickness, inkDensity, wear, edgeBleed,
-  backgroundToggle, lineThickness, subjectScale, thresholdLevel, thresholdEnabled, edgeStrength, edgeEnabled,
-  blackPoint, blackPointEnabled, whitePoint, whitePointEnabled, invertToggle,
-];
+const fileInput = document.getElementById('fileInput');
+const preview = document.getElementById('preview');
+const placeholder = document.getElementById('placeholder');
 
 // ---------------------------------------------------------------------------
-// Error / loading UI helpers
+// Utility: debounce
+// ---------------------------------------------------------------------------
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Error toast
 // ---------------------------------------------------------------------------
 function showError(message) {
   let el = document.getElementById('error-toast');
@@ -75,76 +45,37 @@ function showError(message) {
   el._timer = setTimeout(() => { el.style.opacity = '0'; }, 4000);
 }
 
-function setLoading(on) {
-  if (on) {
-    previewImage.style.opacity = '0.4';
-    previewContainer.classList.add('loading');
-  } else {
-    previewImage.style.opacity = '1';
-    previewContainer.classList.remove('loading');
-  }
-}
-
 // ---------------------------------------------------------------------------
-// Utility: debounce
-// ---------------------------------------------------------------------------
-function debounce(fn, delay) {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Utility: hex color string to [R, G, B]
-// ---------------------------------------------------------------------------
-function hexToRgb(hex) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return [r, g, b];
-}
-
-// ---------------------------------------------------------------------------
-// Collect current control values into a config object
+// Collect config from UI
 // ---------------------------------------------------------------------------
 function getConfig() {
+  const activePill = document.querySelector('#shapePills .pill-btn.active');
+  let shape = activePill ? activePill.dataset.shape : 'oval';
+  if (shape === 'rectangle') shape = 'rect';
+
+  const activeLayout = document.querySelector('.layout-btn.selected');
+  const dateLayout = activeLayout ? parseInt(activeLayout.dataset.layout, 10) : 1;
+
   return {
     image_id: imageId,
-    color: hexToRgb(colorPicker.value),
-    shape: shapeSelect.value,
-    border_style: borderStyle.value,
-    border_thickness: parseInt(borderThickness.value, 10),
-    primary_text: primaryText.value,
-    secondary_text: secondaryText.value,
-    font: fontSelect.value,
-    text_placement: textPlacement.value,
-    ink_density: parseFloat(inkDensity.value),
-    wear: parseFloat(wear.value),
-    edge_bleed: parseFloat(edgeBleed.value),
-    line_thickness: parseInt(lineThickness.value, 10),
-    subject_scale: parseFloat(subjectScale.value),
-    threshold_level: thresholdEnabled.checked ? parseInt(thresholdLevel.value, 10) : 0,
-    edge_strength: edgeEnabled.checked ? parseFloat(edgeStrength.value) : 0,
-    black_point: blackPointEnabled.checked ? parseInt(blackPoint.value, 10) : 0,
-    white_point: whitePointEnabled.checked ? parseInt(whitePoint.value, 10) : 255,
-    invert: invertToggle.checked,
-    background: backgroundToggle.value,
-    output_size: 1080,
+    shape: shape,
+    date_enabled: document.getElementById('dateToggle').checked,
+    date_layout: dateLayout,
+    date_start: document.getElementById('dateStart').value,
+    date_end: document.getElementById('dateEnd').value,
+    ink_density: parseFloat(document.getElementById('ink-density').value),
+    wear: parseFloat(document.getElementById('wear').value),
+    edge_bleed: parseFloat(document.getElementById('edge-bleed').value),
+    line_thickness: parseInt(document.getElementById('line-thickness').value, 10),
+    subject_scale: parseFloat(document.getElementById('subject-scale').value),
+    threshold_level: parseInt(document.getElementById('threshold-level').value, 10),
+    edge_strength: parseFloat(document.getElementById('edge-strength').value),
+    black_point: parseInt(document.getElementById('black-point').value, 10),
+    white_point: parseInt(document.getElementById('white-point').value, 10),
+    invert: document.getElementById('invert-toggle').checked,
+    canvas_width: parseInt(document.getElementById('canvasWidth').value, 10),
+    canvas_height: parseInt(document.getElementById('canvasHeight').value, 10),
   };
-}
-
-// ---------------------------------------------------------------------------
-// Enable / disable controls
-// ---------------------------------------------------------------------------
-function setControlsEnabled(enabled) {
-  allControls.forEach(ctrl => { ctrl.disabled = !enabled; });
-  downloadBtn.disabled = !enabled;
-  // Also handle color preset buttons
-  document.querySelectorAll('.color-preset').forEach(btn => {
-    btn.disabled = !enabled;
-  });
 }
 
 // ---------------------------------------------------------------------------
@@ -156,9 +87,6 @@ async function uploadImage(file) {
   const formData = new FormData();
   formData.append('file', file);
 
-  uploadFilename.textContent = file.name;
-  setLoading(true);
-
   try {
     const response = await fetch('/api/upload', { method: 'POST', body: formData });
     if (!response.ok) {
@@ -167,12 +95,9 @@ async function uploadImage(file) {
     }
     const data = await response.json();
     imageId = data.image_id;
-    setControlsEnabled(true);
-    // Trigger initial generation with default parameters
     await generateStamp();
   } catch (e) {
     showError(e.message || 'Upload failed');
-    setLoading(false);
   }
 }
 
@@ -181,8 +106,6 @@ async function uploadImage(file) {
 // ---------------------------------------------------------------------------
 async function generateStamp() {
   if (!imageId) return;
-
-  setLoading(true);
 
   try {
     const config = getConfig();
@@ -201,17 +124,16 @@ async function generateStamp() {
     if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
     currentBlobUrl = URL.createObjectURL(blob);
 
-    previewImage.src = currentBlobUrl;
-    previewImage.hidden = false;
-    previewPlaceholder.hidden = true;
+    preview.src = currentBlobUrl;
+    preview.hidden = false;
+    placeholder.hidden = true;
   } catch (e) {
     showError(e.message || 'Generation failed');
-  } finally {
-    setLoading(false);
   }
 }
 
 const debouncedGenerate = debounce(generateStamp, 300);
+const debouncedGenerateSlow = debounce(generateStamp, 500);
 
 // ---------------------------------------------------------------------------
 // Download
@@ -220,86 +142,51 @@ function downloadStamp() {
   if (!currentBlobUrl) return;
   const a = document.createElement('a');
   a.href = currentBlobUrl;
-  a.download = 'wanderquest-stamp.png';
+  a.download = 'stamp.png';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
 }
 
 // ---------------------------------------------------------------------------
-// Wire up events
+// Event listeners (API-related only; UI visual state handled by inline script)
 // ---------------------------------------------------------------------------
 
-// File input
+// File upload
 fileInput.addEventListener('change', () => {
   if (fileInput.files.length > 0) uploadImage(fileInput.files[0]);
 });
 
-// Make entire upload zone clickable (not just the label)
-uploadZone.addEventListener('click', (e) => {
-  if (e.target !== fileInput && !e.target.closest('.upload-btn')) {
-    fileInput.click();
-  }
+// Range sliders — debounced regeneration
+['threshold-level', 'edge-strength', 'black-point', 'white-point',
+ 'line-thickness', 'subject-scale', 'ink-density', 'wear', 'edge-bleed',
+ 'canvasWidth', 'canvasHeight'
+].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', debouncedGenerate);
 });
 
-// Drag-and-drop (extend the existing visual-cue handler with actual upload)
-uploadZone.addEventListener('drop', e => {
-  e.preventDefault();
-  uploadZone.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file) uploadImage(file);
-});
-// Ensure dragover prevents default so drop fires
-uploadZone.addEventListener('dragover', e => {
-  e.preventDefault();
-  uploadZone.classList.add('drag-over');
-});
-uploadZone.addEventListener('dragleave', () => {
-  uploadZone.classList.remove('drag-over');
+// Shape pills — immediate regeneration
+document.querySelectorAll('#shapePills .pill-btn').forEach(btn => {
+  btn.addEventListener('click', () => generateStamp());
 });
 
-// Controls — sliders and text inputs use debounced handler
-const debouncedControls = [primaryText, secondaryText, borderThickness, inkDensity, wear, edgeBleed, lineThickness, subjectScale, thresholdLevel, edgeStrength, blackPoint, whitePoint];
-debouncedControls.forEach(ctrl => {
-  ctrl.addEventListener('input', debouncedGenerate);
+// Date toggle — immediate
+document.getElementById('dateToggle').addEventListener('change', () => generateStamp());
+
+// Date layout buttons — immediate
+document.querySelectorAll('.layout-btn').forEach(btn => {
+  btn.addEventListener('click', () => generateStamp());
 });
 
-// Threshold/Edge toggle checkboxes
-thresholdEnabled.addEventListener('change', () => {
-  thresholdRow.classList.toggle('disabled', !thresholdEnabled.checked);
-  generateStamp();
-});
-edgeEnabled.addEventListener('change', () => {
-  edgeRow.classList.toggle('disabled', !edgeEnabled.checked);
-  generateStamp();
-});
-blackPointEnabled.addEventListener('change', () => {
-  blackPointRow.classList.toggle('disabled', !blackPointEnabled.checked);
-  generateStamp();
-});
-whitePointEnabled.addEventListener('change', () => {
-  whitePointRow.classList.toggle('disabled', !whitePointEnabled.checked);
-  generateStamp();
+// Invert toggle — immediate
+document.getElementById('invert-toggle').addEventListener('change', () => generateStamp());
+
+// Date text inputs — debounced (slower)
+['dateStart', 'dateEnd'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', debouncedGenerateSlow);
 });
 
-// Controls — selects and color picker use immediate handler
-const immediateControls = [colorPicker, fontSelect, textPlacement, shapeSelect, borderStyle, backgroundToggle, invertToggle];
-immediateControls.forEach(ctrl => {
-  ctrl.addEventListener('change', generateStamp);
-});
-
-// Color preset buttons — set color picker value then generate
-document.querySelectorAll('.color-preset').forEach(btn => {
-  btn.addEventListener('click', () => {
-    colorPicker.value = btn.dataset.color;
-    generateStamp();
-  });
-});
-
-// Download button
-downloadBtn.addEventListener('click', downloadStamp);
-
-// ---------------------------------------------------------------------------
-// Initial state: disable controls until upload
-// ---------------------------------------------------------------------------
-setControlsEnabled(false);
+// Download
+document.getElementById('download-btn').addEventListener('click', downloadStamp);
