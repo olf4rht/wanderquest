@@ -50,24 +50,6 @@ def apply_stamp_roughness(img: Image.Image, intensity: float = 0.5) -> Image.Ima
     return Image.fromarray(result, mode="RGBA")
 
 
-def colorize(img: Image.Image, color: tuple[int, int, int]) -> Image.Image:
-    """Replace black pixels with the given ink color."""
-    arr = np.array(img).astype(np.float32)
-    # Identify "ink" pixels (dark, with alpha)
-    luminance = arr[:, :, :3].mean(axis=2)
-    ink_mask = luminance < 128
-
-    result = arr.copy()
-    for i, c in enumerate(color):
-        channel = result[:, :, i]
-        # Blend: darker pixels get more ink color
-        blend = 1.0 - (luminance / 255.0)
-        channel[ink_mask] = c * blend[ink_mask] + channel[ink_mask] * (1.0 - blend[ink_mask])
-        result[:, :, i] = channel
-
-    return Image.fromarray(result.clip(0, 255).astype(np.uint8), mode="RGBA")
-
-
 def apply_ink_texture(img: Image.Image, density: float = 0.5) -> Image.Image:
     """Add uneven ink coverage texture. density: 0.0 (light) to 1.0 (heavy)."""
     arr = np.array(img).astype(np.float32)
