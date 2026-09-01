@@ -1,4 +1,6 @@
 // static/app.js — WanderQuest Brand Configurator (API & generation logic)
+(function () {
+'use strict';
 
 // ---------------------------------------------------------------------------
 // State
@@ -7,11 +9,11 @@ let imageId = null;
 let currentBlobUrl = null;
 
 // ---------------------------------------------------------------------------
-// DOM references
+// DOM references (use different names to avoid colliding with inline script)
 // ---------------------------------------------------------------------------
-const fileInput = document.getElementById('fileInput');
-const preview = document.getElementById('preview');
-const placeholder = document.getElementById('placeholder');
+const _fileInput = document.getElementById('fileInput');
+const _preview = document.getElementById('preview');
+const _placeholder = document.getElementById('placeholder');
 
 // ---------------------------------------------------------------------------
 // Utility: debounce
@@ -130,9 +132,9 @@ async function generateStamp() {
     if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
     currentBlobUrl = URL.createObjectURL(blob);
 
-    preview.src = currentBlobUrl;
-    preview.hidden = false;
-    placeholder.hidden = true;
+    _preview.src = currentBlobUrl;
+    _preview.hidden = false;
+    _placeholder.style.display = 'none';
   } catch (e) {
     if (e.name === 'AbortError') return;
     showError(e.message || 'Generation failed');
@@ -160,8 +162,8 @@ function downloadStamp() {
 // ---------------------------------------------------------------------------
 
 // File upload
-fileInput.addEventListener('change', () => {
-  if (fileInput.files.length > 0) uploadImage(fileInput.files[0]);
+_fileInput.addEventListener('change', () => {
+  if (_fileInput.files.length > 0) uploadImage(_fileInput.files[0]);
 });
 
 // Range sliders — debounced regeneration
@@ -210,10 +212,18 @@ document.getElementById('download-btn').addEventListener('click', downloadStamp)
   try {
     const resp = await fetch('/static/assets/logo.svg');
     if (!resp.ok) return;
-    const blob = await resp.blob();
-    const file = new File([blob], 'logo.svg', { type: 'image/svg+xml' });
-    await uploadImage(file);
+    const svgText = await resp.text();
+    const blob = new Blob([svgText], { type: 'image/svg+xml' });
+    const formData = new FormData();
+    formData.append('file', blob, 'logo.svg');
+    const uploadResp = await fetch('/api/upload', { method: 'POST', body: formData });
+    if (!uploadResp.ok) return;
+    const data = await uploadResp.json();
+    imageId = data.image_id;
+    await generateStamp();
   } catch (e) {
     // Silently ignore — user can upload manually
   }
+})();
+
 })();
