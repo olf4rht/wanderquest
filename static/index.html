@@ -4,263 +4,874 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WanderQuest Stamp Generator</title>
-  <link rel="stylesheet" href="/static/styles.css">
+  <style>
+    :root {
+      --page-bg: #ECECEA;
+      --text-primary: #2A2A27;
+      --text-secondary: #62625C;
+      --accent: #3B6FF5;
+      --panel-border: #E2E2DC;
+      --slider-track: #F1F1EC;
+      --slider-fill: #E2E2DC;
+      --white: #ffffff;
+      --font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-stack);
+      background: var(--page-bg);
+      color: var(--text-primary);
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ===== Canvas Area ===== */
+    .canvas-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      height: 100%;
+    }
+
+    .artboard {
+      background: var(--white);
+      border-radius: 52px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 560px;
+      height: 560px;
+      position: relative;
+      overflow: hidden;
+      transition: width 0.3s ease, height 0.3s ease;
+    }
+
+    .artboard img#preview {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    #placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      color: var(--text-secondary);
+    }
+
+    #placeholder svg {
+      opacity: 0.35;
+    }
+
+    #placeholder p {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* ===== Right Icon Rail ===== */
+    .icon-rail {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 56px;
+      background: var(--white);
+      border-radius: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px;
+      gap: 4px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      z-index: 100;
+    }
+
+    .rail-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-stack);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: background 0.15s;
+    }
+
+    .rail-btn:hover {
+      background: var(--slider-track);
+    }
+
+    .rail-btn.active {
+      background: var(--slider-track);
+    }
+
+    .rail-btn.export-btn {
+      background: var(--text-primary);
+      border-radius: 13px;
+      margin-top: 4px;
+    }
+
+    .rail-btn.export-btn:hover {
+      background: #1a1a17;
+    }
+
+    /* ===== Floating Panels ===== */
+    .floating-panel {
+      position: fixed;
+      right: 88px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 280px;
+      background: var(--white);
+      border-radius: 20px;
+      border: 1px solid var(--panel-border);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.1);
+      padding: 20px;
+      display: none;
+      z-index: 99;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .floating-panel.visible {
+      display: block;
+    }
+
+    /* Scrollbar styling for panels */
+    .floating-panel::-webkit-scrollbar {
+      width: 4px;
+    }
+    .floating-panel::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .floating-panel::-webkit-scrollbar-thumb {
+      background: var(--panel-border);
+      border-radius: 2px;
+    }
+
+    /* ===== Panel Typography ===== */
+    .panel-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .panel-section {
+      margin-bottom: 18px;
+    }
+
+    .panel-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .panel-divider {
+      height: 1px;
+      background: var(--panel-border);
+      margin: 16px 0;
+    }
+
+    /* ===== Ratio Circles ===== */
+    .ratio-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    .ratio-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      font-family: var(--font-stack);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: border-color 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ratio-btn.selected {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ===== Slider Rows ===== */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .slider-row .slider-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      min-width: 52px;
+      flex-shrink: 0;
+    }
+
+    .slider-row input[type="range"] {
+      flex: 1;
+    }
+
+    .slider-row .slider-value {
+      font-size: 11px;
+      color: var(--text-secondary);
+      min-width: 32px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .dimension-readout {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* ===== Range Input Styling ===== */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      background: var(--slider-track);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 2px solid var(--slider-fill);
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 2px solid var(--slider-fill);
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 4px;
+      border-radius: 2px;
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--slider-track);
+    }
+
+    /* ===== Dropzone ===== */
+    .dropzone {
+      border: 2px dashed var(--panel-border);
+      border-radius: 12px;
+      padding: 24px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s;
+      margin-bottom: 16px;
+    }
+
+    .dropzone:hover {
+      border-color: var(--text-secondary);
+    }
+
+    .dropzone p {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* ===== Shape Segmented Pills ===== */
+    .segmented-pills {
+      display: flex;
+      background: var(--slider-track);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .pill-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: var(--font-stack);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .pill-btn.active {
+      background: var(--text-primary);
+      color: var(--white);
+    }
+
+    /* ===== Toggle Switch ===== */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .toggle-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-track {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--slider-track);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle-track::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--white);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+    }
+
+    .toggle-switch input:checked + .toggle-track {
+      background: var(--accent);
+    }
+
+    .toggle-switch input:checked + .toggle-track::before {
+      transform: translateX(16px);
+    }
+
+    /* ===== Collapsible Section ===== */
+    .collapsible-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 4px 0;
+      margin-bottom: 10px;
+      user-select: none;
+    }
+
+    .collapsible-header .panel-label {
+      margin-bottom: 0;
+    }
+
+    .collapsible-header .chevron {
+      font-size: 10px;
+      color: var(--text-secondary);
+      transition: transform 0.2s;
+    }
+
+    .collapsible-header.collapsed .chevron {
+      transform: rotate(-90deg);
+    }
+
+    .collapsible-body {
+      overflow: hidden;
+      transition: max-height 0.2s ease;
+    }
+
+    .collapsible-body.collapsed {
+      max-height: 0 !important;
+      overflow: hidden;
+    }
+
+    /* ===== Date Section ===== */
+    .date-inputs {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .date-inputs.visible {
+      display: block;
+    }
+
+    .date-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .date-row input[type="text"] {
+      flex: 1;
+      padding: 6px 8px;
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      font-family: var(--font-stack);
+      font-size: 11px;
+      color: var(--text-primary);
+      background: var(--white);
+      outline: none;
+    }
+
+    .date-row input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+
+    .date-row .date-arrow {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .layout-btns {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .layout-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--panel-border);
+      background: transparent;
+      font-family: var(--font-stack);
+      font-size: 11px;
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+
+    .layout-btn.selected {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ===== Export Button ===== */
+    .export-download-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--text-primary);
+      color: var(--white);
+      border: none;
+      border-radius: 13px;
+      font-family: var(--font-stack);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .export-download-btn:hover {
+      background: #1a1a17;
+    }
+  </style>
 </head>
 <body>
 
-  <header class="app-header">
-    <h1 class="app-title">WanderQuest</h1>
-    <p class="app-subtitle">Artisanal Stamp Generator</p>
-  </header>
-
-  <main class="app-layout">
-
-    <!-- ===== SIDEBAR ===== -->
-    <aside class="sidebar">
-
-      <!-- Upload Section -->
-      <section class="control-section">
-        <button class="section-header" aria-expanded="true" data-section="upload">
-          <span class="section-icon">&#9650;</span>
-          Upload
-        </button>
-        <div class="section-body" id="section-upload">
-          <div class="upload-zone" id="upload-zone">
-            <p class="upload-hint">Drag &amp; drop an image here</p>
-            <p class="upload-or">or</p>
-            <label class="upload-btn">
-              Choose File
-              <input type="file" id="file-input" accept="image/*" hidden>
-            </label>
-          </div>
-          <p class="upload-filename" id="upload-filename"></p>
-        </div>
-      </section>
-
-      <!-- Color Section -->
-      <section class="control-section">
-        <button class="section-header" aria-expanded="true" data-section="color">
-          <span class="section-icon">&#9650;</span>
-          Color
-        </button>
-        <div class="section-body" id="section-color">
-          <label class="control-label" for="color-picker">Stamp Color</label>
-          <input type="color" id="color-picker" value="#C83232" class="color-input">
-          <div class="color-presets">
-            <button class="color-preset" data-color="#C83232" style="background:#C83232" title="Red"></button>
-            <button class="color-preset" data-color="#1E3A5F" style="background:#1E3A5F" title="Navy"></button>
-            <button class="color-preset" data-color="#2D5F2D" style="background:#2D5F2D" title="Green"></button>
-            <button class="color-preset" data-color="#1A1A1A" style="background:#1A1A1A" title="Black"></button>
-            <button class="color-preset" data-color="#5B2C6F" style="background:#5B2C6F" title="Purple"></button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Text Section -->
-      <section class="control-section">
-        <button class="section-header" aria-expanded="true" data-section="text">
-          <span class="section-icon">&#9650;</span>
-          Text
-        </button>
-        <div class="section-body" id="section-text">
-          <label class="control-label" for="primary-text">Primary Text</label>
-          <input type="text" id="primary-text" class="text-input" placeholder="e.g. TOKYO">
-
-          <label class="control-label" for="secondary-text">Secondary Text</label>
-          <input type="text" id="secondary-text" class="text-input" placeholder="e.g. 2026">
-
-          <label class="control-label" for="font-select">Font Style</label>
-          <select id="font-select" class="select-input">
-            <option value="serif">Serif</option>
-            <option value="blackletter">Blackletter</option>
-            <option value="sans">Sans-Serif</option>
-            <option value="handwritten">Handwritten</option>
-            <option value="stencil">Stencil</option>
-          </select>
-
-          <label class="control-label" for="text-placement">Text Placement</label>
-          <select id="text-placement" class="select-input">
-            <option value="below">Below</option>
-            <option value="above">Above</option>
-            <option value="top_arc">Top Arc</option>
-            <option value="bottom_arc">Bottom Arc</option>
-          </select>
-        </div>
-      </section>
-
-      <!-- Shape & Border Section -->
-      <section class="control-section">
-        <button class="section-header" aria-expanded="true" data-section="shape">
-          <span class="section-icon">&#9650;</span>
-          Shape &amp; Border
-        </button>
-        <div class="section-body" id="section-shape">
-          <label class="control-label" for="shape-select">Shape</label>
-          <select id="shape-select" class="select-input">
-            <option value="circle">Circle</option>
-            <option value="rectangle">Rectangle</option>
-            <option value="oval">Oval</option>
-            <option value="rounded_rectangle">Rounded Rectangle</option>
-          </select>
-
-          <label class="control-label" for="border-style">Border Style</label>
-          <select id="border-style" class="select-input">
-            <option value="none">None</option>
-            <option value="single">Single</option>
-            <option value="double">Double</option>
-          </select>
-
-          <label class="control-label" for="border-thickness">
-            Border Thickness
-            <span class="slider-value" id="border-thickness-value">3</span>
-          </label>
-          <input type="range" id="border-thickness" min="1" max="8" value="3" step="1" class="range-input">
-        </div>
-      </section>
-
-      <!-- Ink & Aging Section -->
-      <section class="control-section">
-        <button class="section-header" aria-expanded="true" data-section="ink">
-          <span class="section-icon">&#9650;</span>
-          Ink &amp; Aging
-        </button>
-        <div class="section-body" id="section-ink">
-          <label class="control-label" for="ink-density">
-            Ink Density
-            <span class="slider-value" id="ink-density-value">0.50</span>
-          </label>
-          <input type="range" id="ink-density" min="0" max="1" value="0.5" step="0.05" class="range-input">
-
-          <label class="control-label" for="wear">
-            Wear
-            <span class="slider-value" id="wear-value">0.30</span>
-          </label>
-          <input type="range" id="wear" min="0" max="1" value="0.3" step="0.05" class="range-input">
-
-          <label class="control-label" for="edge-bleed">
-            Edge Bleed
-            <span class="slider-value" id="edge-bleed-value">0.20</span>
-          </label>
-          <input type="range" id="edge-bleed" min="0" max="1" value="0.2" step="0.05" class="range-input">
-
-          <label class="control-label" for="background-toggle">Background</label>
-          <select id="background-toggle" class="select-input">
-            <option value="transparent">Transparent</option>
-            <option value="white">White</option>
-          </select>
-        </div>
-      </section>
-
-      <!-- Image Section -->
-      <section class="control-section">
-        <button class="section-header" aria-expanded="true" data-section="image">
-          <span class="section-icon">&#9650;</span>
-          Image
-        </button>
-        <div class="section-body" id="section-image">
-          <label class="control-label" for="threshold-enabled">
-            Threshold Level
-            <input type="checkbox" id="threshold-enabled" checked class="toggle-input">
-          </label>
-          <div class="slider-row" id="threshold-row">
-            <span class="slider-value" id="threshold-level-value">128</span>
-            <input type="range" id="threshold-level" min="1" max="255" value="128" step="1" class="range-input">
-          </div>
-
-          <label class="control-label" for="edge-enabled">
-            Edges
-            <input type="checkbox" id="edge-enabled" checked class="toggle-input">
-          </label>
-          <div class="slider-row" id="edge-row">
-            <span class="slider-value" id="edge-strength-value">0.50</span>
-            <input type="range" id="edge-strength" min="0" max="1" value="0.5" step="0.05" class="range-input">
-          </div>
-
-          <label class="control-label" for="black-point-enabled">
-            Black Point
-            <input type="checkbox" id="black-point-enabled" class="toggle-input">
-          </label>
-          <div class="slider-row disabled" id="black-point-row">
-            <span class="slider-value" id="black-point-value">0</span>
-            <input type="range" id="black-point" min="0" max="200" value="0" step="5" class="range-input">
-          </div>
-
-          <label class="control-label" for="white-point-enabled">
-            White Point
-            <input type="checkbox" id="white-point-enabled" class="toggle-input">
-          </label>
-          <div class="slider-row disabled" id="white-point-row">
-            <span class="slider-value" id="white-point-value">255</span>
-            <input type="range" id="white-point" min="50" max="255" value="255" step="5" class="range-input">
-          </div>
-
-          <label class="control-label">
-            Invert
-            <input type="checkbox" id="invert-toggle" class="toggle-input">
-          </label>
-
-          <label class="control-label" for="line-thickness">
-            Line Thickness
-            <span class="slider-value" id="line-thickness-value">2</span>
-          </label>
-          <input type="range" id="line-thickness" min="1" max="5" value="2" step="1" class="range-input">
-
-          <label class="control-label" for="subject-scale">
-            Subject Scale
-            <span class="slider-value" id="subject-scale-value">0.50</span>
-          </label>
-          <input type="range" id="subject-scale" min="0.2" max="0.9" value="0.5" step="0.05" class="range-input">
-        </div>
-      </section>
-
-    </aside>
-
-    <!-- ===== PREVIEW ===== -->
-    <section class="preview-area">
-      <div class="preview-container" id="preview-container">
-        <div class="preview-placeholder" id="preview-placeholder">
-          <svg class="placeholder-icon" viewBox="0 0 80 80" width="80" height="80" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="40" cy="40" r="36" stroke-dasharray="6 4"/>
-            <text x="40" y="44" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">STAMP</text>
-          </svg>
-          <p>Configure your stamp and click Generate</p>
-        </div>
-        <img id="preview-image" class="preview-image" alt="Stamp preview" hidden>
+  <!-- ===== Canvas Area ===== -->
+  <div class="canvas-area">
+    <div class="artboard" id="artboard">
+      <img id="preview" alt="Stamp preview" hidden>
+      <div id="placeholder">
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="40" cy="40" r="36" stroke-dasharray="6 4"/>
+          <path d="M30 50 L40 28 L50 50" stroke-width="1.5"/>
+          <path d="M25 50 L55 50" stroke-width="1.5"/>
+          <circle cx="48" cy="33" r="3"/>
+        </svg>
+        <p>Upload an image to begin</p>
       </div>
-      <button class="download-btn" id="download-btn">Download PNG</button>
-    </section>
+    </div>
+  </div>
 
-  </main>
+  <!-- ===== Right Icon Rail ===== -->
+  <nav class="icon-rail">
+    <button class="rail-btn" id="railRatio" title="Canvas / Ratio" data-panel="ratioPanel">
+      1:1
+    </button>
+    <button class="rail-btn" id="railImage" title="Image" data-panel="imagePanel">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#62625C" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1.5" y="3" width="15" height="12" rx="2"/>
+        <path d="M1.5 12l3.7-3.7a1 1 0 011.4 0L9 10.7l2.1-2.1a1 1 0 011.4 0L16.5 12.5"/>
+        <circle cx="11.5" cy="6.5" r="1"/>
+      </svg>
+    </button>
+    <button class="rail-btn" id="railInk" title="Ink &amp; Aging" data-panel="inkPanel">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#62625C" stroke-width="1.2" stroke-linejoin="round">
+        <rect x="3" y="1.5" width="12" height="4.5" rx="1"/>
+        <rect x="3" y="11" width="12" height="5.5" rx="1"/>
+        <path d="M1.5 8.5h15v6a1 1 0 01-1 1h-13a1 1 0 01-1-1v-6z"/>
+        <rect x="5" y="12.5" width="8" height="2.5" rx=".5"/>
+      </svg>
+    </button>
+    <button class="rail-btn export-btn" id="railExport" title="Export" data-panel="exportPanel">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12.5v2.5a1.5 1.5 0 001.5 1.5h9a1.5 1.5 0 001.5-1.5v-2.5"/>
+        <path d="M12.5 5.5L9 2 5.5 5.5"/>
+        <path d="M9 2v10"/>
+      </svg>
+    </button>
+  </nav>
+
+  <!-- ===== Panel 1: Ratio ===== -->
+  <div class="floating-panel" id="ratioPanel">
+    <div class="panel-section">
+      <div class="panel-label">Aspect Ratio</div>
+      <div class="ratio-row">
+        <button class="ratio-btn" data-ratio="16:9">16:9</button>
+        <button class="ratio-btn" data-ratio="9:16">9:16</button>
+        <button class="ratio-btn selected" data-ratio="1:1">1:1</button>
+        <button class="ratio-btn" data-ratio="4:3">4:3</button>
+      </div>
+    </div>
+    <div class="panel-section">
+      <div class="slider-row">
+        <span class="slider-label">Width</span>
+        <input type="range" id="canvasWidth" min="540" max="3840" value="1080">
+        <span class="slider-value" id="canvasWidthValue">1080</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">Height</span>
+        <input type="range" id="canvasHeight" min="540" max="3840" value="1080">
+        <span class="slider-value" id="canvasHeightValue">1080</span>
+      </div>
+      <div class="dimension-readout" id="dimensionReadout">1080 &times; 1080 PX</div>
+    </div>
+  </div>
+
+  <!-- ===== Panel 2: Image ===== -->
+  <div class="floating-panel" id="imagePanel">
+    <!-- Upload -->
+    <div class="panel-section">
+      <div class="dropzone" id="dropzone">
+        <p>Drop image or click to upload</p>
+        <input type="file" id="fileInput" accept="image/*" hidden>
+      </div>
+    </div>
+
+    <!-- Shape -->
+    <div class="panel-section">
+      <div class="panel-label">Shape</div>
+      <div class="segmented-pills" id="shapePills">
+        <button class="pill-btn active" data-shape="oval">oval</button>
+        <button class="pill-btn" data-shape="rectangle">rectangle</button>
+        <button class="pill-btn" data-shape="square">square</button>
+      </div>
+    </div>
+
+    <div class="panel-divider"></div>
+
+    <!-- Image Settings (collapsible) -->
+    <div class="panel-section">
+      <div class="collapsible-header" id="imageSettingsHeader">
+        <span class="panel-label">Image Settings</span>
+        <span class="chevron">&#9660;</span>
+      </div>
+      <div class="collapsible-body" id="imageSettingsBody">
+        <div class="slider-row">
+          <span class="slider-label">Threshold</span>
+          <input type="range" id="threshold-level" min="0" max="255" value="75">
+          <span class="slider-value" id="threshold-level-value">75</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Edges</span>
+          <input type="range" id="edge-strength" min="0" max="1" step="0.01" value="0.70">
+          <span class="slider-value" id="edge-strength-value">0.70</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Black pt</span>
+          <input type="range" id="black-point" min="0" max="255" value="0">
+          <span class="slider-value" id="black-point-value">0</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">White pt</span>
+          <input type="range" id="white-point" min="0" max="255" value="255">
+          <span class="slider-value" id="white-point-value">255</span>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">Invert</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="invert-toggle">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Line w</span>
+          <input type="range" id="line-thickness" min="1" max="5" value="2">
+          <span class="slider-value" id="line-thickness-value">2</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Scale</span>
+          <input type="range" id="subject-scale" min="0.20" max="0.90" step="0.01" value="0.50">
+          <span class="slider-value" id="subject-scale-value">0.50</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-divider"></div>
+
+    <!-- Date -->
+    <div class="panel-section">
+      <div class="toggle-row">
+        <span class="toggle-label">Date</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="dateToggle">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+      <div class="date-inputs" id="dateInputs">
+        <div class="date-row">
+          <input type="text" id="dateStart" placeholder="DD.MM.YYYY">
+          <span class="date-arrow">&rarr;</span>
+          <input type="text" id="dateEnd" placeholder="DD.MM.YYYY">
+        </div>
+        <div class="layout-btns">
+          <button class="layout-btn selected" data-layout="1">1</button>
+          <button class="layout-btn" data-layout="2">2</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Panel 3: Ink & Aging ===== -->
+  <div class="floating-panel" id="inkPanel">
+    <div class="panel-section">
+      <div class="panel-label">Ink &amp; Aging</div>
+      <div class="slider-row">
+        <span class="slider-label">Density</span>
+        <input type="range" id="ink-density" min="0" max="1" step="0.01" value="0.50">
+        <span class="slider-value" id="ink-density-value">0.50</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">Wear</span>
+        <input type="range" id="wear" min="0" max="1" step="0.01" value="0.30">
+        <span class="slider-value" id="wear-value">0.30</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">Bleed</span>
+        <input type="range" id="edge-bleed" min="0" max="1" step="0.01" value="0.20">
+        <span class="slider-value" id="edge-bleed-value">0.20</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Panel 4: Export ===== -->
+  <div class="floating-panel" id="exportPanel">
+    <div class="panel-section">
+      <button class="export-download-btn" id="download-btn">Download PNG</button>
+    </div>
+  </div>
 
   <script>
-    // Collapsible sections
-    document.querySelectorAll('.section-header').forEach(btn => {
+    // === Rail button panel toggling ===
+    const railBtns = document.querySelectorAll('.rail-btn[data-panel]');
+    const panels = document.querySelectorAll('.floating-panel');
+
+    railBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        const expanded = btn.getAttribute('aria-expanded') === 'true';
-        btn.setAttribute('aria-expanded', String(!expanded));
-        const body = btn.nextElementSibling;
-        body.hidden = expanded;
-        btn.querySelector('.section-icon').textContent = expanded ? '\u25BC' : '\u25B2';
+        const targetId = btn.dataset.panel;
+        const target = document.getElementById(targetId);
+        const isVisible = target.classList.contains('visible');
+
+        // Close all panels, deactivate all buttons
+        panels.forEach(p => p.classList.remove('visible'));
+        railBtns.forEach(b => b.classList.remove('active'));
+
+        // Toggle the clicked one
+        if (!isVisible) {
+          target.classList.add('visible');
+          btn.classList.add('active');
+        }
       });
     });
 
-    // Slider value display
-    document.querySelectorAll('.range-input').forEach(slider => {
-      const display = document.getElementById(slider.id + '-value');
-      if (display) {
-        slider.addEventListener('input', () => {
-          display.textContent = parseFloat(slider.value).toFixed(
-            slider.step.includes('.') ? 2 : 0
-          );
-        });
+    // === Ratio buttons ===
+    const ratioBtns = document.querySelectorAll('.ratio-btn');
+    const widthSlider = document.getElementById('canvasWidth');
+    const heightSlider = document.getElementById('canvasHeight');
+    const widthValue = document.getElementById('canvasWidthValue');
+    const heightValue = document.getElementById('canvasHeightValue');
+    const dimensionReadout = document.getElementById('dimensionReadout');
+    const railRatioBtn = document.getElementById('railRatio');
+    const artboard = document.getElementById('artboard');
+
+    const ratioMap = {
+      '16:9': [1920, 1080],
+      '9:16': [1080, 1920],
+      '1:1':  [1080, 1080],
+      '4:3':  [1440, 1080]
+    };
+
+    function updateDimensions(w, h) {
+      widthSlider.value = w;
+      heightSlider.value = h;
+      widthValue.textContent = w;
+      heightValue.textContent = h;
+      dimensionReadout.innerHTML = w + ' &times; ' + h + ' PX';
+      updateArtboardAspect(w, h);
+    }
+
+    function updateArtboardAspect(w, h) {
+      const maxW = 560;
+      const maxH = 560;
+      const ratio = w / h;
+      if (ratio >= 1) {
+        artboard.style.width = maxW + 'px';
+        artboard.style.height = Math.round(maxW / ratio) + 'px';
+      } else {
+        artboard.style.height = maxH + 'px';
+        artboard.style.width = Math.round(maxH * ratio) + 'px';
+      }
+    }
+
+    ratioBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        ratioBtns.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        const r = btn.dataset.ratio;
+        railRatioBtn.textContent = r;
+        const dims = ratioMap[r];
+        if (dims) updateDimensions(dims[0], dims[1]);
+      });
+    });
+
+    [widthSlider, heightSlider].forEach(slider => {
+      slider.addEventListener('input', () => {
+        const w = parseInt(widthSlider.value);
+        const h = parseInt(heightSlider.value);
+        widthValue.textContent = w;
+        heightValue.textContent = h;
+        dimensionReadout.innerHTML = w + ' &times; ' + h + ' PX';
+        updateArtboardAspect(w, h);
+        // Deselect ratio buttons if manual
+        ratioBtns.forEach(b => b.classList.remove('selected'));
+      });
+    });
+
+    // === Dropzone ===
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    dropzone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropzone.style.borderColor = 'var(--accent)';
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.style.borderColor = '';
+    });
+
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropzone.style.borderColor = '';
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        fileInput.dispatchEvent(new Event('change', { bubbles: true }));
       }
     });
 
-    // Color preset buttons (visual feedback only; app.js handles generation)
-    document.querySelectorAll('.color-preset').forEach(btn => {
+    // === Shape pills ===
+    document.getElementById('shapePills').addEventListener('click', e => {
+      const btn = e.target.closest('.pill-btn');
+      if (!btn) return;
+      document.querySelectorAll('#shapePills .pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+
+    // === Image Settings collapsible ===
+    const settingsHeader = document.getElementById('imageSettingsHeader');
+    const settingsBody = document.getElementById('imageSettingsBody');
+
+    settingsHeader.addEventListener('click', () => {
+      settingsHeader.classList.toggle('collapsed');
+      settingsBody.classList.toggle('collapsed');
+    });
+
+    // === Date toggle ===
+    const dateToggle = document.getElementById('dateToggle');
+    const dateInputs = document.getElementById('dateInputs');
+
+    dateToggle.addEventListener('change', () => {
+      dateInputs.classList.toggle('visible', dateToggle.checked);
+    });
+
+    // === Date layout buttons ===
+    document.querySelectorAll('.layout-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.getElementById('color-picker').value = btn.dataset.color;
+        document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
       });
+    });
+
+    // === Slider value display ===
+    document.querySelectorAll('.slider-row input[type="range"]').forEach(slider => {
+      const valueEl = slider.nextElementSibling;
+      if (valueEl && valueEl.classList.contains('slider-value')) {
+        slider.addEventListener('input', () => {
+          const step = slider.step || '1';
+          const decimals = step.includes('.') ? step.split('.')[1].length : 0;
+          valueEl.textContent = parseFloat(slider.value).toFixed(decimals);
+        });
+      }
     });
   </script>
   <script src="/static/app.js"></script>
