@@ -62,9 +62,21 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
     composed = apply_wear(composed, config.wear)
     composed = apply_edge_bleed(composed, config.edge_bleed)
 
-    # Stage 5: Scale to output dimensions
+    # Stage 5: Fit into output canvas (no distortion)
     out_w, out_h = config.canvas_width, config.canvas_height
     if (out_w, out_h) != composed.size:
-        composed = composed.resize((out_w, out_h), Image.LANCZOS)
+        # Scale to fit within canvas, preserving aspect ratio
+        src_w, src_h = composed.size
+        scale = min(out_w / src_w, out_h / src_h)
+        new_w = round(src_w * scale)
+        new_h = round(src_h * scale)
+        scaled = composed.resize((new_w, new_h), Image.LANCZOS)
+
+        # Center on transparent canvas
+        canvas = Image.new("RGBA", (out_w, out_h), (0, 0, 0, 0))
+        x = (out_w - new_w) // 2
+        y = (out_h - new_h) // 2
+        canvas.paste(scaled, (x, y), scaled)
+        composed = canvas
 
     return composed
