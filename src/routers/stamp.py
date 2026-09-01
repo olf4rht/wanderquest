@@ -47,23 +47,23 @@ def get_image(image_id: str) -> bytes | None:
 
 class GenerateRequest(BaseModel):
     image_id: str
-    color: list[int]  # [R, G, B]
-    shape: str = "circle"
-    border_style: str = "single"
-    border_thickness: int = 3
-    primary_text: str = ""
-    secondary_text: str = ""
-    font: str = "serif"
-    text_placement: str = "below"
-    ink_density: float = 0.5
-    wear: float = 0.3
-    edge_bleed: float = 0.2
+    shape: str = "oval"
+    date_enabled: bool = False
+    date_layout: int = 1
+    date_start: str = ""
+    date_end: str = ""
+    ink_density: float = 0.50
+    wear: float = 0.30
+    edge_bleed: float = 0.20
     line_thickness: int = 2
-    subject_scale: float = 0.5
-    threshold_strength: float = 0.5
-    edge_strength: float = 0.5
-    background: str = "transparent"
-    output_size: int = 512
+    subject_scale: float = 0.50
+    threshold_level: int = 75
+    edge_strength: float = 0.70
+    black_point: int = 0
+    white_point: int = 255
+    invert: bool = False
+    canvas_width: int = 1080
+    canvas_height: int = 1080
 
 
 @router.post("/generate")
@@ -73,23 +73,23 @@ async def generate(request: GenerateRequest):
         raise HTTPException(status_code=404, detail="Image not found. Upload first.")
 
     config = StampConfig(
-        color=tuple(request.color),
         shape=request.shape,
-        border_style=request.border_style,
-        border_thickness=request.border_thickness,
-        primary_text=request.primary_text,
-        secondary_text=request.secondary_text,
-        font=request.font,
-        text_placement=request.text_placement,
+        date_enabled=request.date_enabled,
+        date_layout=request.date_layout,
+        date_start=request.date_start,
+        date_end=request.date_end,
         ink_density=request.ink_density,
         wear=request.wear,
         edge_bleed=request.edge_bleed,
         line_thickness=request.line_thickness,
         subject_scale=request.subject_scale,
-        threshold_strength=request.threshold_strength,
+        threshold_level=request.threshold_level,
         edge_strength=request.edge_strength,
-        background=request.background,
-        output_size=request.output_size,
+        black_point=request.black_point,
+        white_point=request.white_point,
+        invert=request.invert,
+        canvas_width=request.canvas_width,
+        canvas_height=request.canvas_height,
     )
 
     import logging

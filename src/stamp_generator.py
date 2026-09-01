@@ -3,35 +3,37 @@ from PIL import Image
 from src.lineart import extract_lineart
 from src.cleanup import threshold_image, remove_noise, auto_crop, adjust_line_thickness
 from src.composition import create_stamp_frame, place_image_in_frame
-from src.text_renderer import render_text_straight, render_text_curved
 from src.ink_effect import apply_stamp_roughness, colorize, apply_ink_texture, apply_wear, apply_edge_bleed
 from dataclasses import dataclass
 
 
 @dataclass
 class StampConfig:
-    color: tuple[int, int, int]
-    shape: str
-    border_style: str
-    border_thickness: int
-    primary_text: str
-    secondary_text: str
-    font: str
-    text_placement: str
-    ink_density: float
-    wear: float
-    edge_bleed: float
-    line_thickness: int
-    subject_scale: float
-    threshold_strength: float
-    edge_strength: float
-    background: str
-    output_size: int
+    shape: str = "oval"                   # oval, rect, square
+    date_enabled: bool = False
+    date_layout: int = 1                  # 1 or 2
+    date_start: str = ""                  # DD.MM.YYYY
+    date_end: str = ""                    # DD.MM.YYYY
+    ink_density: float = 0.50
+    wear: float = 0.30
+    edge_bleed: float = 0.20
+    line_thickness: int = 2
+    subject_scale: float = 0.50
+    threshold_level: int = 75
+    edge_strength: float = 0.70
+    black_point: int = 0
+    white_point: int = 255
+    invert: bool = False
+    canvas_width: int = 1080
+    canvas_height: int = 1080
 
 
 def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
     # Stage 1: Line art extraction
-    lineart = extract_lineart(image_bytes, config.threshold_strength, config.edge_strength)
+    lineart = extract_lineart(
+        image_bytes, config.threshold_level, config.edge_strength,
+        config.black_point, config.white_point, config.invert,
+    )
 
     # Stage 2: Cleanup
     lineart = threshold_image(lineart)
