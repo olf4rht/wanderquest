@@ -104,8 +104,13 @@ async function uploadImage(file) {
 // ---------------------------------------------------------------------------
 // Generate stamp
 // ---------------------------------------------------------------------------
+let currentController = null;
+
 async function generateStamp() {
   if (!imageId) return;
+
+  if (currentController) currentController.abort();
+  currentController = new AbortController();
 
   try {
     const config = getConfig();
@@ -113,6 +118,7 @@ async function generateStamp() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
+      signal: currentController.signal,
     });
 
     if (!response.ok) {
@@ -128,6 +134,7 @@ async function generateStamp() {
     preview.hidden = false;
     placeholder.hidden = true;
   } catch (e) {
+    if (e.name === 'AbortError') return;
     showError(e.message || 'Generation failed');
   }
 }
@@ -181,6 +188,11 @@ document.querySelectorAll('.layout-btn').forEach(btn => {
 
 // Invert toggle — immediate
 document.getElementById('invert-toggle').addEventListener('change', () => generateStamp());
+
+// Ratio buttons — immediate (canvas dimensions change)
+document.querySelectorAll('.ratio-btn').forEach(btn => {
+  btn.addEventListener('click', () => generateStamp());
+});
 
 // Date text inputs — debounced (slower)
 ['dateStart', 'dateEnd'].forEach(id => {
