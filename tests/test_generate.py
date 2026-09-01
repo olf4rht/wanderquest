@@ -33,25 +33,19 @@ def test_generate_stamp(mock_lineart):
         "/api/generate",
         json={
             "image_id": image_id,
-            "color": [200, 30, 30],
-            "shape": "circle",
-            "border_style": "single",
-            "border_thickness": 3,
-            "primary_text": "Test Stamp",
-            "secondary_text": "",
-            "font": "serif",
-            "text_placement": "below",
+            "shape": "oval",
             "ink_density": 0.5,
             "wear": 0.3,
             "edge_bleed": 0.2,
             "line_thickness": 2,
             "subject_scale": 0.5,
-            "background": "transparent",
-            "output_size": 512,
+            "threshold_level": 75,
+            "edge_strength": 0.70,
+            "canvas_width": 512,
+            "canvas_height": 512,
         },
     )
     assert response.status_code == 200
     assert response.headers["content-type"] == "image/png"
-    # Verify it's a valid PNG
     img = Image.open(io.BytesIO(response.content))
     assert img.size == (512, 512)
