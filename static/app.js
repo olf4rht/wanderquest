@@ -202,3 +202,18 @@ document.querySelectorAll('.ratio-btn').forEach(btn => {
 
 // Download
 document.getElementById('download-btn').addEventListener('click', downloadStamp);
+
+// ---------------------------------------------------------------------------
+// Auto-load default logo on page start
+// ---------------------------------------------------------------------------
+(async function loadDefaultLogo() {
+  try {
+    const resp = await fetch('/static/assets/logo.svg');
+    if (!resp.ok) return;
+    const blob = await resp.blob();
+    const file = new File([blob], 'logo.svg', { type: 'image/svg+xml' });
+    await uploadImage(file);
+  } catch (e) {
+    // Silently ignore — user can upload manually
+  }
+})();

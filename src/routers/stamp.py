@@ -15,7 +15,7 @@ _image_store: dict[str, bytes] = {}
 
 ALLOWED_CONTENT_TYPES = {
     "image/png", "image/jpeg", "image/jpg", "image/webp",
-    "image/heic", "image/heif",
+    "image/heic", "image/heif", "image/svg+xml",
 }
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
@@ -29,12 +29,21 @@ async def upload_photo(file: UploadFile):
     if len(contents) > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="File too large (max 10MB)")
 
-    # Validate it's actually an image
-    try:
-        img = Image.open(_io.BytesIO(contents))
-        img.verify()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid image file")
+    # SVG: rasterize to PNG before storing
+    if file.content_type == "image/svg+xml":
+        try:
+            import cairosvg
+            png_bytes = cairosvg.svg2png(bytestring=contents, output_width=1080, output_height=1080)
+            contents = png_bytes
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid SVG file")
+    else:
+        # Validate it's actually a raster image
+        try:
+            img = Image.open(_io.BytesIO(contents))
+            img.verify()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid image file")
 
     image_id = str(uuid.uuid4())
     _image_store[image_id] = contents
