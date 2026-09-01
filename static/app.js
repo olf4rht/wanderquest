@@ -32,18 +32,26 @@ const edgeBleed = document.getElementById('edge-bleed');
 const backgroundToggle = document.getElementById('background-toggle');
 const lineThickness = document.getElementById('line-thickness');
 const subjectScale = document.getElementById('subject-scale');
-const thresholdStrength = document.getElementById('threshold-strength');
+const thresholdLevel = document.getElementById('threshold-level');
 const thresholdEnabled = document.getElementById('threshold-enabled');
 const thresholdRow = document.getElementById('threshold-row');
 const edgeStrength = document.getElementById('edge-strength');
 const edgeEnabled = document.getElementById('edge-enabled');
 const edgeRow = document.getElementById('edge-row');
+const blackPoint = document.getElementById('black-point');
+const blackPointEnabled = document.getElementById('black-point-enabled');
+const blackPointRow = document.getElementById('black-point-row');
+const whitePoint = document.getElementById('white-point');
+const whitePointEnabled = document.getElementById('white-point-enabled');
+const whitePointRow = document.getElementById('white-point-row');
+const invertToggle = document.getElementById('invert-toggle');
 
 // All interactive controls (for enabling/disabling and wiring events)
 const allControls = [
   colorPicker, primaryText, secondaryText, fontSelect, textPlacement,
   shapeSelect, borderStyle, borderThickness, inkDensity, wear, edgeBleed,
-  backgroundToggle, lineThickness, subjectScale, thresholdStrength, thresholdEnabled, edgeStrength, edgeEnabled,
+  backgroundToggle, lineThickness, subjectScale, thresholdLevel, thresholdEnabled, edgeStrength, edgeEnabled,
+  blackPoint, blackPointEnabled, whitePoint, whitePointEnabled, invertToggle,
 ];
 
 // ---------------------------------------------------------------------------
@@ -117,8 +125,11 @@ function getConfig() {
     edge_bleed: parseFloat(edgeBleed.value),
     line_thickness: parseInt(lineThickness.value, 10),
     subject_scale: parseFloat(subjectScale.value),
-    threshold_strength: thresholdEnabled.checked ? parseFloat(thresholdStrength.value) : 0,
+    threshold_level: thresholdEnabled.checked ? parseInt(thresholdLevel.value, 10) : 0,
     edge_strength: edgeEnabled.checked ? parseFloat(edgeStrength.value) : 0,
+    black_point: blackPointEnabled.checked ? parseInt(blackPoint.value, 10) : 0,
+    white_point: whitePointEnabled.checked ? parseInt(whitePoint.value, 10) : 255,
+    invert: invertToggle.checked,
     background: backgroundToggle.value,
     output_size: 1080,
   };
@@ -248,7 +259,7 @@ uploadZone.addEventListener('dragleave', () => {
 });
 
 // Controls — sliders and text inputs use debounced handler
-const debouncedControls = [primaryText, secondaryText, borderThickness, inkDensity, wear, edgeBleed, lineThickness, subjectScale, thresholdStrength, edgeStrength];
+const debouncedControls = [primaryText, secondaryText, borderThickness, inkDensity, wear, edgeBleed, lineThickness, subjectScale, thresholdLevel, edgeStrength, blackPoint, whitePoint];
 debouncedControls.forEach(ctrl => {
   ctrl.addEventListener('input', debouncedGenerate);
 });
@@ -262,9 +273,17 @@ edgeEnabled.addEventListener('change', () => {
   edgeRow.classList.toggle('disabled', !edgeEnabled.checked);
   generateStamp();
 });
+blackPointEnabled.addEventListener('change', () => {
+  blackPointRow.classList.toggle('disabled', !blackPointEnabled.checked);
+  generateStamp();
+});
+whitePointEnabled.addEventListener('change', () => {
+  whitePointRow.classList.toggle('disabled', !whitePointEnabled.checked);
+  generateStamp();
+});
 
 // Controls — selects and color picker use immediate handler
-const immediateControls = [colorPicker, fontSelect, textPlacement, shapeSelect, borderStyle, backgroundToggle];
+const immediateControls = [colorPicker, fontSelect, textPlacement, shapeSelect, borderStyle, backgroundToggle, invertToggle];
 immediateControls.forEach(ctrl => {
   ctrl.addEventListener('change', generateStamp);
 });
