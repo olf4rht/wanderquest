@@ -175,25 +175,25 @@ _fileInput.addEventListener('change', () => {
   if (el) el.addEventListener('input', debouncedGenerate);
 });
 
-// Shape pills — immediate regeneration
+// Shape pills — defer to let inline script toggle .active first
 document.querySelectorAll('#shapePills .pill-btn').forEach(btn => {
-  btn.addEventListener('click', () => generateStamp());
+  btn.addEventListener('click', () => setTimeout(generateStamp, 0));
 });
 
 // Date toggle — immediate
 document.getElementById('dateToggle').addEventListener('change', () => generateStamp());
 
-// Date layout buttons — immediate
+// Date layout buttons — defer to let inline script toggle .selected first
 document.querySelectorAll('.layout-btn').forEach(btn => {
-  btn.addEventListener('click', () => generateStamp());
+  btn.addEventListener('click', () => setTimeout(generateStamp, 0));
 });
 
 // Invert toggle — immediate
 document.getElementById('invert-toggle').addEventListener('change', () => generateStamp());
 
-// Ratio buttons — immediate (canvas dimensions change)
+// Ratio buttons — defer to let inline script update dimensions first
 document.querySelectorAll('.ratio-btn').forEach(btn => {
-  btn.addEventListener('click', () => generateStamp());
+  btn.addEventListener('click', () => setTimeout(generateStamp, 0));
 });
 
 // Date text inputs — debounced (slower)
