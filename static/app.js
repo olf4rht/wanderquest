@@ -106,13 +106,12 @@ async function uploadImage(file) {
 // ---------------------------------------------------------------------------
 // Generate stamp
 // ---------------------------------------------------------------------------
-let currentController = null;
+let generationId = 0;
 
 async function generateStamp() {
   if (!imageId) return;
 
-  if (currentController) currentController.abort();
-  currentController = new AbortController();
+  const thisId = ++generationId;
 
   try {
     const config = getConfig();
@@ -120,8 +119,10 @@ async function generateStamp() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
-      signal: currentController.signal,
     });
+
+    // Stale response — a newer request was made while this one was in flight
+    if (thisId !== generationId) return;
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
@@ -129,6 +130,8 @@ async function generateStamp() {
     }
 
     const blob = await response.blob();
+    if (thisId !== generationId) return;
+
     if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
     currentBlobUrl = URL.createObjectURL(blob);
 
@@ -136,7 +139,7 @@ async function generateStamp() {
     _preview.hidden = false;
     _placeholder.style.display = 'none';
   } catch (e) {
-    if (e.name === 'AbortError') return;
+    if (thisId !== generationId) return;
     showError(e.message || 'Generation failed');
   }
 }
