@@ -7,6 +7,7 @@
 // ---------------------------------------------------------------------------
 let imageId = null;
 let currentBlobUrl = null;
+let currentLogoVariant = 1;
 
 // ---------------------------------------------------------------------------
 // DOM references (use different names to avoid colliding with inline script)
@@ -77,6 +78,7 @@ function getConfig() {
     invert: document.getElementById('invert-toggle').checked,
     canvas_width: parseInt(document.getElementById('canvasWidth').value, 10),
     canvas_height: parseInt(document.getElementById('canvasHeight').value, 10),
+    logo_variant: currentLogoVariant,
   };
 }
 
@@ -261,6 +263,9 @@ logoOptions.forEach(btn => {
   btn.addEventListener('click', () => {
     logoOptions.forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
+    // Extract variant number from data-logo (e.g. "var_1" → 1, "var_2" → 2)
+    const varNum = parseInt(btn.dataset.logo.replace('var_', ''), 10);
+    currentLogoVariant = varNum || 1;
     loadLogoVariant(btn.dataset.logo);
   });
 });

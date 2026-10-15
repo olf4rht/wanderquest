@@ -27,6 +27,7 @@ class StampConfig:
     invert: bool = False
     canvas_width: int = 1080
     canvas_height: int = 1080
+    logo_variant: int = 1
 
 
 # ---------------------------------------------------------------------------
@@ -68,6 +69,7 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
         config.date_layout, config.date_start, config.date_end,
         config.subject_scale, config.ink_density, config.wear,
         config.edge_bleed, config.canvas_width, config.canvas_height,
+        config.logo_variant,
     )
     if _final_cache and _final_cache[0] == final_key:
         return _final_cache[1].copy()
@@ -102,6 +104,7 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
         cleanup_key,
         config.shape, config.date_enabled, config.date_layout,
         config.date_start, config.date_end, config.subject_scale,
+        config.logo_variant,
     )
 
     if _compose_cache and _compose_cache[0] == compose_key:
@@ -116,6 +119,7 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
             date_start=config.date_start,
             date_end=config.date_end,
             subject_scale=config.subject_scale,
+            logo_variant=config.logo_variant,
         )
         _compose_cache = (compose_key, composed.copy())
 

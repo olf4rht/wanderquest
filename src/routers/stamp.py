@@ -73,6 +73,7 @@ class GenerateRequest(BaseModel):
     invert: bool = False
     canvas_width: int = 1080
     canvas_height: int = 1080
+    logo_variant: int = 1
     export: bool = False
 
 
@@ -95,6 +96,7 @@ def _build_config(request: GenerateRequest) -> StampConfig:
         invert=request.invert,
         canvas_width=request.canvas_width,
         canvas_height=request.canvas_height,
+        logo_variant=request.logo_variant,
     )
 
 

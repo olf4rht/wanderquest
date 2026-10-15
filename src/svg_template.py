@@ -40,11 +40,12 @@ def get_template_key(shape: str, date_enabled: bool, date_layout: int = 0) -> st
     return f"date_layout_{date_layout}_{shape}_shape"
 
 
-def load_template(key: str) -> str:
+def load_template(key: str, logo_variant: int = 1) -> str:
     """Load an SVG template file and return its raw content.
 
     Args:
         key: Template key from get_template_key().
+        logo_variant: 1 or 2 — selects the logo_1/ or logo_2/ subdirectory.
 
     Returns:
         Raw SVG string.
@@ -52,7 +53,8 @@ def load_template(key: str) -> str:
     Raises:
         FileNotFoundError: If the template file doesn't exist.
     """
-    path = os.path.join(_LAYOUTS_DIR, f"{key}.svg")
+    subdir = f"logo_{logo_variant}"
+    path = os.path.join(_LAYOUTS_DIR, subdir, f"{key}.svg")
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
 

@@ -35,6 +35,7 @@ def compose_stamp(
     date_start: str,
     date_end: str,
     subject_scale: float,
+    logo_variant: int = 1,
 ) -> Image.Image:
     """Compose a processed grayscale image into an SVG stamp template.
 
@@ -42,11 +43,12 @@ def compose_stamp(
         processed_image: Grayscale (L mode) image where dark pixels = ink.
         shape: One of "oval", "rect", "square".
         date_enabled: Whether to show date text.
-        date_layout: 1 or 2 (only used when date_enabled is True).
+        date_layout: 1, 2, or 3 (only used when date_enabled is True).
         date_start: Start date in "DD.MM.YYYY" format.
         date_end: End date in "DD.MM.YYYY" format.
         subject_scale: Scale factor for the subject image (0.2 - 0.9).
             At 0.5 the image fills the region 1:1.
+        logo_variant: 1 or 2 — selects which logo's layout templates to use.
 
     Returns:
         RGBA Image of size 1080x1080.
@@ -55,7 +57,7 @@ def compose_stamp(
     key = get_template_key(shape, date_enabled, date_layout)
 
     # 2. Load the SVG template
-    svg_content = load_template(key)
+    svg_content = load_template(key, logo_variant=logo_variant)
 
     # 3. If date_enabled and layout 1 or 3, update date text
     if date_enabled and date_layout in (1, 3) and date_start and date_end:
