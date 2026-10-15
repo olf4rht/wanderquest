@@ -81,12 +81,26 @@ def compose_stamp(
     canvas = Image.new("RGBA", (CANVAS_SIZE, CANVAS_SIZE), (0, 0, 0, 0))
 
     # 8. Place the processed image into the image-region
-    _place_image_in_region(canvas, processed_image, region, subject_scale)
+    _place_image_in_region(canvas, processed_image, region)
 
     # 9. Composite the SVG overlay on top
     canvas = Image.alpha_composite(canvas, overlay)
 
-    # 10. Return result
+    # 10. Scale the entire composition if subject_scale != 0.5
+    if abs(subject_scale - 0.5) > 0.001:
+        scale_factor = subject_scale / 0.5  # 0.5 → 1.0, 0.2 → 0.4, 0.9 → 1.8
+        new_size = max(1, int(round(CANVAS_SIZE * scale_factor)))
+        try:
+            resample = Image.LANCZOS
+        except AttributeError:
+            resample = Image.Resampling.LANCZOS
+        scaled = canvas.resize((new_size, new_size), resample)
+        canvas = Image.new("RGBA", (CANVAS_SIZE, CANVAS_SIZE), (0, 0, 0, 0))
+        paste_x = (CANVAS_SIZE - new_size) // 2
+        paste_y = (CANVAS_SIZE - new_size) // 2
+        canvas.paste(scaled, (paste_x, paste_y))
+
+    # 11. Return result
     return canvas
 
 
@@ -94,17 +108,16 @@ def _place_image_in_region(
     canvas: Image.Image,
     subject: Image.Image,
     region: dict,
-    subject_scale: float,
 ) -> None:
     """Place the processed grayscale image into the template image-region.
 
     Modifies `canvas` in-place by pasting the image clipped to the region shape.
+    The subject is scaled to cover the region completely.
 
     Args:
         canvas: The RGBA canvas to paste onto.
         subject: Grayscale (L mode) image, dark pixels = ink.
         region: Geometry dict from get_image_region().
-        subject_scale: 0.2-0.9; at 0.5 the image fills the region exactly.
     """
     # Determine region bounding box
     if region["type"] == "ellipse":
@@ -126,14 +139,10 @@ def _place_image_in_region(
     if reg_w <= 0 or reg_h <= 0:
         return
 
-    # Scale subject to cover the region, adjusted by subject_scale.
-    # subject_scale=0.5 → 1:1 cover; <0.5 → smaller; >0.5 → larger (more crop)
-    scale_factor = subject_scale / 0.5  # normalize so 0.5 → 1.0
-
+    # Scale subject to cover the region completely
     src_w, src_h = subject.size
-    # Compute cover scale (fill the region completely)
     cover_scale = max(reg_w / max(src_w, 1), reg_h / max(src_h, 1))
-    final_scale = cover_scale * scale_factor
+    final_scale = cover_scale
 
     new_w = max(1, int(round(src_w * final_scale)))
     new_h = max(1, int(round(src_h * final_scale)))
