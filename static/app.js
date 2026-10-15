@@ -66,9 +66,9 @@ function getConfig() {
     date_layout: dateLayout,
     date_start: document.getElementById('dateStart').value,
     date_end: document.getElementById('dateEnd').value,
-    ink_density: parseFloat(document.getElementById('ink-density').value),
+    ink_density: 0.50,
     wear: parseFloat(document.getElementById('wear').value),
-    edge_bleed: parseFloat(document.getElementById('edge-bleed').value),
+    edge_bleed: 0.20,
     line_thickness: parseInt(document.getElementById('line-thickness').value, 10),
     subject_scale: parseFloat(document.getElementById('subject-scale').value),
     threshold_level: parseInt(document.getElementById('threshold-level').value, 10),
@@ -193,7 +193,7 @@ _fileInput.addEventListener('change', () => {
 });
 
 // Ink/wear/bleed sliders — faster debounce (server caches expensive stages)
-['ink-density', 'wear', 'edge-bleed'].forEach(id => {
+['wear'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('input', debouncedGenerateFast);
 });
