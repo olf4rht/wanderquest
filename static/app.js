@@ -235,24 +235,39 @@ document.querySelectorAll('.ratio-btn').forEach(btn => {
 document.getElementById('download-btn').addEventListener('click', downloadStamp);
 
 // ---------------------------------------------------------------------------
-// Auto-load default logo on page start
+// Logo variant switching
 // ---------------------------------------------------------------------------
-(async function loadDefaultLogo() {
+const logoOptions = document.querySelectorAll('.logo-option');
+
+async function loadLogoVariant(variant) {
   try {
-    const resp = await fetch('/static/assets/logo.svg');
+    const resp = await fetch('/static/assets/logo_' + variant + '.svg');
     if (!resp.ok) return;
     const svgText = await resp.text();
     const blob = new Blob([svgText], { type: 'image/svg+xml' });
     const formData = new FormData();
-    formData.append('file', blob, 'logo.svg');
+    formData.append('file', blob, 'logo_' + variant + '.svg');
     const uploadResp = await fetch('/api/upload', { method: 'POST', body: formData });
     if (!uploadResp.ok) return;
     const data = await uploadResp.json();
     imageId = data.image_id;
     await generateStamp();
   } catch (e) {
-    // Silently ignore — user can upload manually
+    showError(e.message || 'Failed to load logo');
   }
-})();
+}
+
+logoOptions.forEach(btn => {
+  btn.addEventListener('click', () => {
+    logoOptions.forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    loadLogoVariant(btn.dataset.logo);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Auto-load default logo on page start
+// ---------------------------------------------------------------------------
+loadLogoVariant('var_1');
 
 })();

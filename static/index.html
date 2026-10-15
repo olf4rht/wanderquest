@@ -513,6 +513,39 @@
       color: var(--accent);
     }
 
+    /* ===== Logo Options ===== */
+    .logo-options {
+      display: flex;
+      gap: 10px;
+    }
+
+    .logo-option {
+      flex: 1;
+      border: 2px solid var(--panel-border);
+      border-radius: 12px;
+      background: var(--white);
+      padding: 12px 8px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-option:hover {
+      border-color: var(--text-secondary);
+    }
+
+    .logo-option.selected {
+      border-color: var(--accent);
+    }
+
+    .logo-option img {
+      width: 100%;
+      height: 48px;
+      object-fit: contain;
+    }
+
     /* ===== Export Button ===== */
     .export-download-btn {
       width: 100%;
@@ -558,6 +591,9 @@
 
   <!-- ===== Right Icon Rail ===== -->
   <nav class="icon-rail">
+    <button class="rail-btn" id="railLogo" title="Logo" data-panel="logoPanel">
+      <img src="/static/assets/icons/logo.svg" width="44" height="44" alt="Logo">
+    </button>
     <button class="rail-btn" id="railRatio" title="Canvas / Ratio" data-panel="ratioPanel">
       <img src="/static/assets/icons/ratio.svg" width="44" height="44" alt="Ratio">
     </button>
@@ -571,6 +607,21 @@
       <img src="/static/assets/icons/export.svg" width="56" height="60" alt="Export">
     </button>
   </nav>
+
+  <!-- ===== Panel 0: Logo ===== -->
+  <div class="floating-panel" id="logoPanel">
+    <div class="panel-section">
+      <div class="panel-label">Logo</div>
+      <div class="logo-options">
+        <button class="logo-option selected" data-logo="var_1" title="Variant 1">
+          <img src="/static/assets/logo_var_1.svg" alt="Logo variant 1">
+        </button>
+        <button class="logo-option" data-logo="var_2" title="Variant 2">
+          <img src="/static/assets/logo_var_2.svg" alt="Logo variant 2">
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== Panel 1: Ratio ===== -->
   <div class="floating-panel" id="ratioPanel">
