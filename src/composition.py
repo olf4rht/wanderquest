@@ -57,8 +57,8 @@ def compose_stamp(
     # 2. Load the SVG template
     svg_content = load_template(key)
 
-    # 3. If date_enabled and layout 1, update date text
-    if date_enabled and date_layout == 1 and date_start and date_end:
+    # 3. If date_enabled and layout 1 or 3, update date text
+    if date_enabled and date_layout in (1, 3) and date_start and date_end:
         svg_content = update_date_text(svg_content, date_start, date_end)
 
     # 4. Get image-region geometry

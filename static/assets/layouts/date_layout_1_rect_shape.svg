@@ -1,44 +1,64 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080" fill="none">
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="date_layout_1_rect_shape">
-<rect width="1080" height="1080" fill="white" />
-<rect id="Rectangle 1543" x="353" y="330" width="375" height="194" rx="23" stroke="black" stroke-width="2" />
-<g id="Frame 2147203037">
+<rect width="1080" height="1080" fill="white"/>
+<g id="Frame 2147203043">
 <g id="Group 73">
 <g id="date-end">
 <g id="Frame 22">
-<rect x="627" y="262" width="32.4545" height="32.4545" rx="16.2273" stroke="black" stroke-width="2" />
+<rect x="627" y="262" width="32.4545" height="32.4545" rx="16.2273" stroke="black" stroke-width="2"/>
 <text id="08" fill="black" style="white-space: pre" xml:space="preserve" font-family="GT Pressura Trial VF" font-size="16" font-weight="500" letter-spacing="0em"><tspan x="632.54" y="283.335">08</tspan></text>
 </g>
 <g id="Frame 23">
-<rect x="661.772" y="262" width="32.4545" height="32.4545" rx="16.2273" stroke="black" stroke-width="2" />
+<rect x="661.772" y="262" width="32.4545" height="32.4545" rx="16.2273" stroke="black" stroke-width="2"/>
 <text id="06" fill="black" style="white-space: pre" xml:space="preserve" font-family="GT Pressura Trial VF" font-size="16" font-weight="500" letter-spacing="0em"><tspan x="667.422" y="283.335">06</tspan></text>
 </g>
 <g id="Frame 24">
-<rect x="696.546" y="262" width="32.4545" height="32.4545" rx="16.2273" stroke="black" stroke-width="2" />
+<rect x="696.546" y="262" width="32.4545" height="32.4545" rx="16.2273" stroke="black" stroke-width="2"/>
 <text id="27" fill="black" style="white-space: pre" xml:space="preserve" font-family="GT Pressura Trial VF" font-size="16" font-weight="500" letter-spacing="0em"><tspan x="703.672" y="283.335">27</tspan></text>
 </g>
 </g>
 <g id="date-start">
 <g id="Frame 22_2">
-<rect x="351" y="262" width="32.4545" height="32.4545" rx="16.2273" stroke="black" stroke-width="2" />
-<text id="05" fill="black" style="white-space: pre" xml:space="preserve" font-family="GT Pressura Trial VF" font-size="16" font-weight="500" letter-spacing="0em"><tspan x="356.774" y="283.335">05</tspan></text>
+<rect x="353" y="262" width="32.4545" height="32.4545" rx="16.2273" stroke="black" stroke-width="2"/>
+<text id="05" fill="black" style="white-space: pre" xml:space="preserve" font-family="GT Pressura Trial VF" font-size="16" font-weight="500" letter-spacing="0em"><tspan x="358.774" y="283.335">05</tspan></text>
 </g>
 <g id="Frame 23_2">
-<rect x="385.772" y="262" width="32.4545" height="32.4545" rx="16.2273" stroke="black" stroke-width="2" />
-<text id="06_2" fill="black" style="white-space: pre" xml:space="preserve" font-family="GT Pressura Trial VF" font-size="16" font-weight="500" letter-spacing="0em"><tspan x="391.422" y="283.335">06</tspan></text>
+<rect x="387.772" y="262" width="32.4545" height="32.4545" rx="16.2273" stroke="black" stroke-width="2"/>
+<text id="06_2" fill="black" style="white-space: pre" xml:space="preserve" font-family="GT Pressura Trial VF" font-size="16" font-weight="500" letter-spacing="0em"><tspan x="393.422" y="283.335">06</tspan></text>
 </g>
 <g id="Frame 24_2">
-<rect x="420.546" y="262" width="32.4545" height="32.4545" rx="16.2273" stroke="black" stroke-width="2" />
-<text id="27_2" fill="black" style="white-space: pre" xml:space="preserve" font-family="GT Pressura Trial VF" font-size="16" font-weight="500" letter-spacing="0em"><tspan x="427.672" y="283.335">27</tspan></text>
+<rect x="422.546" y="262" width="32.4545" height="32.4545" rx="16.2273" stroke="black" stroke-width="2"/>
+<text id="27_2" fill="black" style="white-space: pre" xml:space="preserve" font-family="GT Pressura Trial VF" font-size="16" font-weight="500" letter-spacing="0em"><tspan x="429.672" y="283.335">27</tspan></text>
 </g>
 </g>
-<line id="Line 5" x1="465" y1="277" x2="616" y2="277" stroke="black" stroke-width="2" />
+<line id="Line 5" x1="465" y1="277" x2="616" y2="277" stroke="black" stroke-width="2"/>
 </g>
-<rect id="image-region" x="352" y="330.455" width="376.001" height="194" rx="24" fill="#D9D9D9" stroke="black" stroke-width="2" />
-<g id="Group 72">
+<g id="Frame 2147203042">
+<rect id="image-region" x="353" y="320.455" width="375" height="194" rx="24" fill="#D9D9D9" stroke="black" stroke-width="2"/>
+<g id="Group 2147202763">
+<path id="Vector" d="M613.041 717.241L624.222 704.719H630.82L621.016 715.533L631.146 731.166H624.629L616.93 719.095L613.041 723.382V731.166H607.348V704.719H613.041V717.241ZM648.141 704.719C651.141 704.719 653.503 705.437 655.216 706.879C656.93 708.322 657.789 710.261 657.789 712.688C657.789 715.281 656.93 717.271 655.216 718.658C654.367 719.337 653.357 719.844 652.196 720.186L659.362 731.161H653.131L646.9 721.025H641.91V731.161H636.443V704.714H648.146L648.141 704.719ZM669.94 731.161H664.648V704.714H669.94V731.161ZM700.789 731.161H695.14L692.97 724.708H682.975L680.804 731.161H675.231L684.754 704.714H691.276L700.799 731.161H700.789ZM728.999 731.161H723.351L721.18 724.708H711.185L709.01 731.161H703.437L712.959 704.714H719.477L728.999 731.161ZM684.196 720.623H691.744L687.95 709.085L684.196 720.623ZM712.407 720.623H719.954L716.16 709.085L712.407 720.623ZM641.91 716.819H647.498C649.051 716.819 650.206 716.512 650.955 715.899C651.734 715.256 652.121 714.281 652.121 712.975C652.121 711.668 651.734 710.703 650.955 710.09C650.206 709.452 649.051 709.131 647.498 709.131H641.91V716.824V716.819Z" fill="black"/>
+<path id="Vector_2" d="M573.811 708.885L558.41 726.754H574.294V731.161H552.254V726.995L567.691 709.126H552.575V704.719H573.811V708.885Z" fill="black"/>
+<path id="Vector_3" d="M545.585 704.719V731.166H540.294V704.719H545.585Z" fill="black"/>
+<path id="Vector_4" d="M534.142 708.885L518.741 726.754H534.625V731.161H512.585V726.995L528.022 709.126H512.907V704.719H534.142V708.885Z" fill="black"/>
+<path id="Vector_5" d="M509.062 731.161H503.218L500.972 724.708H490.63L488.384 731.161H482.62L492.469 704.714H499.213L509.062 731.161ZM491.896 720.623H499.705L495.781 709.085L491.896 720.623Z" fill="black"/>
+<path id="Union" d="M442.582 715.578H453.894V704.719H459.255V731.165H453.894V720.025H442.582V731.165H437.22V704.719H442.582V715.578Z" fill="black"/>
+<path id="Vector_6" d="M431.049 704.719V709.166H422.331V731.166H416.889V709.166H408.13V704.719H431.049Z" fill="black"/>
+<path id="Vector_7" d="M401.959 704.719V731.166H396.668V704.719H401.959Z" fill="black"/>
+<path id="Vector_8" d="M361.175 731.161L353.472 704.714H359.366L364.582 726.553L369.878 704.714H375.175L380.552 726.553L385.728 704.714H391.381L383.677 731.161H377.461L373.773 716.734L372.532 710.482H372.451L371.21 716.734L367.562 731.161H361.185H361.175Z" fill="black"/>
+<path id="Vector_9" d="M706.412 638.122C712.322 638.122 717.01 639.599 720.468 642.554C723.98 645.508 725.739 649.498 725.739 654.518C725.739 659.538 723.98 663.719 720.468 666.563C718.593 668.076 716.357 669.176 713.759 669.87L729 693.337H718.709L704.649 671.252H692.774V693.337H683.905V638.122H706.407H706.412ZM692.774 663.805H705.739C709.362 663.805 712.041 663.081 713.769 661.629C715.553 660.121 716.448 657.835 716.448 654.77C716.448 651.704 715.553 649.498 713.769 647.991C712.041 646.483 709.362 645.735 705.739 645.735H692.774V663.805Z" fill="black"/>
+<path id="Vector_10" d="M631.056 661.548H658.327V638.127H667.362V693.342H658.327V669.252H631.056V693.342H622.106V638.127H631.056V661.548Z" fill="black"/>
+<path id="Vector_11" d="M582.106 638.122C590.75 638.122 597.473 640.519 602.267 645.317C607.116 650.056 609.543 656.86 609.543 665.729C609.543 674.598 607.116 681.428 602.267 686.226C597.468 690.965 590.75 693.337 582.106 693.337H562.614V638.122H582.106ZM582.106 685.724C587.961 685.724 592.423 683.995 595.493 680.538C598.619 677.026 600.177 672.086 600.177 665.729C600.177 659.373 598.614 654.463 595.493 651.006C592.428 647.493 587.966 645.735 582.106 645.735H571.564V685.724H582.106Z" fill="black"/>
+<path id="Vector_12" d="M546.469 638.122V693.337H537.52V638.122H546.469Z" fill="black"/>
+<path id="Vector_13" d="M520.75 638.122V673.759C520.75 680.171 518.967 685.191 515.399 688.819C511.886 692.387 506.977 694.171 500.675 694.171C496.158 694.171 492.474 693.332 489.63 691.664C486.786 689.99 484.806 687.649 483.691 684.639C482.575 681.573 482.379 678.031 483.108 674.016L491.726 672.428C491.057 677.227 491.419 680.764 492.811 683.051C494.203 685.282 496.826 686.397 500.675 686.397C504.856 686.397 507.731 685.196 509.293 682.799C510.911 680.347 511.72 676.774 511.72 672.091V638.127H520.755L520.75 638.122Z" fill="black"/>
+<path id="Vector_14" d="M424.587 685.639H455.039V693.337H415.638V638.122H424.587V685.639Z" fill="black"/>
+<path id="Vector_15" d="M405.843 693.337H396.391L391.119 678.865H367.944L362.673 693.337H353.472L374.301 638.122H385.009L405.838 693.337H405.843ZM370.456 671.588H388.612L379.577 645.825L370.456 671.588Z" fill="black"/>
+<path id="Vector_16" d="M541.997 620.896C538.967 620.896 536.389 623.478 536.389 626.503C536.389 629.529 538.972 632.111 541.997 632.111C545.022 632.111 547.605 629.529 547.605 626.503C547.605 623.478 545.022 620.896 541.997 620.896Z" fill="black"/>
+<path id="Vector_17" d="M717.447 541.756L718.884 615.036H727.487L728.924 530.565L717.447 541.756Z" fill="black"/>
+<path id="Vector_18" d="M700.527 581.283L700.502 581.268L562.207 581.615C561.489 565.841 550.021 552.067 524.635 554.213L519.901 569.273C537.68 566.55 553.318 568.836 557.473 581.615L416.003 581.469C415.717 565.695 402.526 553.786 387.606 554.364L380.586 568.138C400.385 567.132 406.968 571.725 411.707 581.328L408.229 581.474H378.431V615.031H417.305V596.238L422.475 615.031H563.79V596.238L568.956 615.031L709.843 614.936L711.275 530.455L699.808 541.399L700.527 581.273V581.283Z" fill="black"/>
+<path id="Vector_19" d="M386.502 548.389C389.533 548.389 392.11 545.806 392.11 542.781C392.11 539.756 389.528 537.173 386.502 537.173C383.477 537.173 380.895 539.756 380.895 542.781C380.895 545.806 383.477 548.389 386.502 548.389Z" fill="black"/>
+<path id="Vector_20" d="M353.507 574.761C357.09 580.776 361.11 586.796 367.557 592.68C365.557 614.042 351.347 625.815 336 622.946V651.629C354.357 649.76 363.251 641.021 369.417 614.484L373.572 582.213C370.849 578.057 369.839 576.193 366.251 566.439L353.502 574.761H353.507Z" fill="black"/>
 </g>
 </g>
 </g>
-<defs>
-</defs>
+</g>
 </svg>
