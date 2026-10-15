@@ -113,6 +113,9 @@ async function generateStamp() {
 
   const thisId = ++generationId;
 
+  // Show loading state (reduced opacity) for visual feedback
+  if (_preview.src) _preview.style.opacity = '0.5';
+
   try {
     const config = getConfig();
     const response = await fetch('/api/generate', {
@@ -137,27 +140,45 @@ async function generateStamp() {
 
     _preview.src = currentBlobUrl;
     _preview.hidden = false;
+    _preview.style.opacity = '1';
     _placeholder.style.display = 'none';
   } catch (e) {
     if (thisId !== generationId) return;
+    _preview.style.opacity = '1';
     showError(e.message || 'Generation failed');
   }
 }
 
 const debouncedGenerate = debounce(generateStamp, 300);
+const debouncedGenerateFast = debounce(generateStamp, 120);
 const debouncedGenerateSlow = debounce(generateStamp, 500);
 
 // ---------------------------------------------------------------------------
 // Download
 // ---------------------------------------------------------------------------
-function downloadStamp() {
-  if (!currentBlobUrl) return;
-  const a = document.createElement('a');
-  a.href = currentBlobUrl;
-  a.download = 'stamp.png';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+async function downloadStamp() {
+  if (!imageId) return;
+  try {
+    const config = getConfig();
+    config.export = true;
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config),
+    });
+    if (!response.ok) throw new Error('Export failed');
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'stamp.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    showError(e.message || 'Export failed');
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -169,10 +190,15 @@ _fileInput.addEventListener('change', () => {
   if (_fileInput.files.length > 0) uploadImage(_fileInput.files[0]);
 });
 
-// Range sliders — debounced regeneration
+// Ink/wear/bleed sliders — faster debounce (server caches expensive stages)
+['ink-density', 'wear', 'edge-bleed'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', debouncedGenerateFast);
+});
+
+// Image processing sliders — normal debounce (triggers full pipeline)
 ['threshold-level', 'edge-strength', 'black-point', 'white-point',
- 'line-thickness', 'subject-scale', 'ink-density', 'wear', 'edge-bleed',
- 'canvasWidth', 'canvasHeight'
+ 'line-thickness', 'subject-scale', 'canvasWidth', 'canvasHeight'
 ].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('input', debouncedGenerate);

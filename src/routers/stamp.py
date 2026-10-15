@@ -73,15 +73,11 @@ class GenerateRequest(BaseModel):
     invert: bool = False
     canvas_width: int = 1080
     canvas_height: int = 1080
+    export: bool = False
 
 
-@router.post("/generate")
-async def generate(request: GenerateRequest):
-    image_bytes = get_image(request.image_id)
-    if image_bytes is None:
-        raise HTTPException(status_code=404, detail="Image not found. Upload first.")
-
-    config = StampConfig(
+def _build_config(request: GenerateRequest) -> StampConfig:
+    return StampConfig(
         shape=request.shape,
         date_enabled=request.date_enabled,
         date_layout=request.date_layout,
@@ -101,16 +97,31 @@ async def generate(request: GenerateRequest):
         canvas_height=request.canvas_height,
     )
 
-    import logging
-    logger = logging.getLogger(__name__)
+
+import logging
+_logger = logging.getLogger(__name__)
+
+
+@router.post("/generate")
+async def generate(request: GenerateRequest):
+    image_bytes = get_image(request.image_id)
+    if image_bytes is None:
+        raise HTTPException(status_code=404, detail="Image not found. Upload first.")
+
+    config = _build_config(request)
+
     try:
         result = generate_stamp(image_bytes, config)
     except Exception as e:
-        logger.exception("Stamp generation failed")
+        _logger.exception("Stamp generation failed")
         raise HTTPException(status_code=500, detail=str(e))
 
     buf = _io.BytesIO()
-    result.save(buf, format="PNG")
-    buf.seek(0)
-
-    return StreamingResponse(buf, media_type="image/png")
+    if request.export:
+        result.save(buf, format="PNG")
+        buf.seek(0)
+        return StreamingResponse(buf, media_type="image/png")
+    else:
+        result.save(buf, format="WEBP", quality=85, method=0)
+        buf.seek(0)
+        return StreamingResponse(buf, media_type="image/webp")

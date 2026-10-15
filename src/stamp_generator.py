@@ -1,4 +1,5 @@
 from __future__ import annotations
+import hashlib
 from PIL import Image
 from src.lineart import extract_lineart
 from src.cleanup import threshold_image, remove_noise, auto_crop, adjust_line_thickness
@@ -28,35 +29,97 @@ class StampConfig:
     canvas_height: int = 1080
 
 
+# ---------------------------------------------------------------------------
+# Pipeline cache — avoids re-running expensive stages when only later
+# parameters change (e.g. tweaking ink_density shouldn't redo lineart).
+#
+# Two cache slots:
+#   _cleanup_cache: output of stages 1-2 (lineart + cleanup)
+#   _compose_cache: output of stage 3 (SVG composition)
+# Each slot stores (key, Image) where key is a hash of the parameters
+# that affect that stage.  Only the most recent result is kept.
+# ---------------------------------------------------------------------------
+_cleanup_cache: tuple[str, Image.Image] | None = None
+_compose_cache: tuple[str, Image.Image] | None = None
+_final_cache: tuple[str, Image.Image] | None = None
+
+
+def _make_key(*parts) -> str:
+    return hashlib.sha256(repr(parts).encode()).hexdigest()
+
+
 def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
     """Generate a brand logo stamp from an uploaded image.
 
     Pipeline: lineart → cleanup → SVG template compose → ink effects → scale
+
+    Intermediate results are cached so that changing only late-stage
+    parameters (ink, wear, bleed) skips the expensive early stages.
     """
-    # Stage 1: Line art extraction
-    lineart = extract_lineart(
-        image_bytes, config.threshold_level, config.edge_strength,
+    global _cleanup_cache, _compose_cache, _final_cache
+
+    # --- Full result cache: skip everything if exact same config ---
+    image_hash = hashlib.sha256(image_bytes).hexdigest()
+    final_key = _make_key(
+        image_hash,
+        config.threshold_level, config.edge_strength,
         config.black_point, config.white_point, config.invert,
+        config.line_thickness, config.shape, config.date_enabled,
+        config.date_layout, config.date_start, config.date_end,
+        config.subject_scale, config.ink_density, config.wear,
+        config.edge_bleed, config.canvas_width, config.canvas_height,
+    )
+    if _final_cache and _final_cache[0] == final_key:
+        return _final_cache[1].copy()
+
+    # --- Cache key for stages 1-2 (lineart + cleanup) ---
+    cleanup_key = _make_key(
+        image_hash,
+        config.threshold_level, config.edge_strength,
+        config.black_point, config.white_point, config.invert,
+        config.line_thickness,
     )
 
-    # Stage 2: Cleanup
-    lineart = threshold_image(lineart)
-    lineart = remove_noise(lineart)
-    lineart = auto_crop(lineart)
-    lineart = adjust_line_thickness(lineart, config.line_thickness)
+    if _cleanup_cache and _cleanup_cache[0] == cleanup_key:
+        lineart = _cleanup_cache[1]
+    else:
+        # Stage 1: Line art extraction
+        lineart = extract_lineart(
+            image_bytes, config.threshold_level, config.edge_strength,
+            config.black_point, config.white_point, config.invert,
+        )
+        # Stage 2: Cleanup
+        lineart = threshold_image(lineart)
+        lineart = remove_noise(lineart)
+        lineart = auto_crop(lineart)
+        lineart = adjust_line_thickness(lineart, config.line_thickness)
+        _cleanup_cache = (cleanup_key, lineart)
+        # Invalidate compose cache when lineart changes
+        _compose_cache = None
 
-    # Stage 3: Compose into SVG layout template
-    composed = compose_stamp(
-        processed_image=lineart,
-        shape=config.shape,
-        date_enabled=config.date_enabled,
-        date_layout=config.date_layout,
-        date_start=config.date_start,
-        date_end=config.date_end,
-        subject_scale=config.subject_scale,
+    # --- Cache key for stage 3 (composition) ---
+    compose_key = _make_key(
+        cleanup_key,
+        config.shape, config.date_enabled, config.date_layout,
+        config.date_start, config.date_end, config.subject_scale,
     )
 
-    # Stage 4: Ink & aging effects (always active)
+    if _compose_cache and _compose_cache[0] == compose_key:
+        composed = _compose_cache[1].copy()
+    else:
+        # Stage 3: Compose into SVG layout template
+        composed = compose_stamp(
+            processed_image=lineart,
+            shape=config.shape,
+            date_enabled=config.date_enabled,
+            date_layout=config.date_layout,
+            date_start=config.date_start,
+            date_end=config.date_end,
+            subject_scale=config.subject_scale,
+        )
+        _compose_cache = (compose_key, composed.copy())
+
+    # Stage 4: Ink & aging effects (always active, fast enough to run each time)
     composed = apply_stamp_roughness(composed, config.wear)
     composed = apply_ink_texture(composed, config.ink_density)
     composed = apply_wear(composed, config.wear)
@@ -79,4 +142,5 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
         canvas.paste(scaled, (x, y), scaled)
         composed = canvas
 
+    _final_cache = (final_key, composed.copy())
     return composed
