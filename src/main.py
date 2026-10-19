@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
@@ -8,6 +9,12 @@ import os
 from src.routers.stamp import router as stamp_router
 
 app = FastAPI(title="WanderQuest Stamp Generator")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(stamp_router)
 
 static_dir = os.path.join(os.path.dirname(__file__), "..", "static")

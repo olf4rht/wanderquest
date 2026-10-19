@@ -2,6 +2,8 @@
 (function () {
 'use strict';
 
+const API_BASE = 'https://wanderquest-jkf8.onrender.com';
+
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
@@ -92,7 +94,7 @@ async function uploadImage(file) {
   formData.append('file', file);
 
   try {
-    const response = await fetch('/api/upload', { method: 'POST', body: formData });
+    const response = await fetch(API_BASE + '/api/upload', { method: 'POST', body: formData });
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
       throw new Error(err.detail || 'Upload failed');
@@ -120,7 +122,7 @@ async function generateStamp() {
 
   try {
     const config = getConfig();
-    const response = await fetch('/api/generate', {
+    const response = await fetch(API_BASE + '/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
@@ -163,7 +165,7 @@ async function downloadStamp() {
   try {
     const config = getConfig();
     config.export = true;
-    const response = await fetch('/api/generate', {
+    const response = await fetch(API_BASE + '/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
@@ -243,13 +245,13 @@ const logoOptions = document.querySelectorAll('.logo-option');
 
 async function loadLogoVariant(variant) {
   try {
-    const resp = await fetch('/static/assets/logo_' + variant + '.svg');
+    const resp = await fetch('/assets/logo_' + variant + '.svg');
     if (!resp.ok) return;
     const svgText = await resp.text();
     const blob = new Blob([svgText], { type: 'image/svg+xml' });
     const formData = new FormData();
     formData.append('file', blob, 'logo_' + variant + '.svg');
-    const uploadResp = await fetch('/api/upload', { method: 'POST', body: formData });
+    const uploadResp = await fetch(API_BASE + '/api/upload', { method: 'POST', body: formData });
     if (!uploadResp.ok) return;
     const data = await uploadResp.json();
     imageId = data.image_id;
