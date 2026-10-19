@@ -573,28 +573,143 @@
       gap: 6px;
     }
 
-    .swatch {
+    /* ---------- Color panel ---------- */
+    .color-panel {
+      background: #fefbfa !important;
+      border-color: #e2e2dc !important;
+      position: relative;
+      padding: 14px 16px !important;
+    }
+
+    .color-panel .panel-section {
+      margin-bottom: 4px;
+    }
+
+    .color-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 5px 0;
+      width: 100%;
+    }
+
+    .color-row-label {
+      flex: 1;
+      font-family: 'Geist Mono', monospace;
+      font-weight: 500;
+      font-size: 12px;
+      line-height: 26px;
+      color: #62625c;
+      white-space: nowrap;
+    }
+
+    button.color-dot {
+      display: block;
+      width: 26px;
+      height: 26px;
+      min-width: 26px;
+      min-height: 26px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      outline: none;
+      flex-shrink: 0;
+      transition: box-shadow .15s;
+      box-sizing: border-box;
       -webkit-appearance: none;
+      -moz-appearance: none;
       appearance: none;
-      width: 32px;
-      height: 32px;
-      min-height: 32px;
-      border-radius: 6px;
+      padding: 0;
+      margin: 0;
+      background: #000;
+    }
+
+    button.color-dot:hover {
+      box-shadow: 0 0 0 2px rgba(0,0,0,.12);
+    }
+
+    button.color-dot.active {
+      box-shadow: 0 0 0 2px rgba(74,124,255,.5);
+    }
+
+    button.color-dot.dot-light {
+      border-color: #d0d0d0;
+    }
+
+    button.color-dot.dot-transparent {
+      background: repeating-conic-gradient(#e0e0e0 0% 25%, #fff 0% 50%) 50% / 8px 8px !important;
+    }
+
+    .dice-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 26px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-radius: 13px;
+      padding: 0;
+      opacity: 0.65;
+      transition: opacity .15s;
+      flex-shrink: 0;
+    }
+
+    .dice-btn:hover {
+      opacity: 1;
+    }
+
+    /* ---------- Swatch popover ---------- */
+    .swatch-popover {
+      position: absolute;
+      right: calc(100% + 8px);
+      background: #fff;
+      border-radius: 15px;
+      padding: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.15);
+      z-index: 100;
+      border: 1px solid #e2e2dc;
+    }
+
+    .swatch-popover-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 35px);
+      gap: 4px;
+    }
+
+    button.swatch {
+      display: block;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 35px;
+      height: 35px;
+      min-width: 35px;
+      min-height: 35px;
+      border-radius: 50%;
       border: 2px solid transparent;
       cursor: pointer;
       outline: none;
       padding: 0;
+      margin: 0;
       transition: border-color .15s, box-shadow .15s;
+      box-sizing: border-box;
       flex-shrink: 0;
     }
 
-    .swatch:hover {
+    button.swatch:hover {
       box-shadow: 0 0 0 2px rgba(0,0,0,.15);
     }
 
-    .swatch.selected {
+    button.swatch.selected {
       border-color: #4A7CFF;
       box-shadow: 0 0 0 2px rgba(74,124,255,.35);
+    }
+
+    button.swatch.swatch-light {
+      border-color: #d0d0d0;
     }
 
     .swatch-transparent {
@@ -609,33 +724,6 @@
       left: 0;
       width: 100%;
       height: 100%;
-    }
-
-    .color-mode-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .random-btn {
-      -webkit-appearance: none;
-      appearance: none;
-      background: var(--slider-track);
-      border: 1px solid var(--panel-border);
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      transition: background .15s;
-    }
-
-    .random-btn:hover {
-      background: var(--slider-fill);
     }
   </style>
 </head>
