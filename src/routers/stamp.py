@@ -67,6 +67,10 @@ class GenerateRequest(BaseModel):
     line_thickness: int = 2
     subject_scale: float = 0.50
     image_scale: float = 1.0
+    color_mode: str = "unicolor"
+    color_latin: str = "#000000"
+    color_arabic: str = "#000000"
+    color_image: str = "#000000"
     threshold_level: int = 75
     edge_strength: float = 0.70
     black_point: int = 0
@@ -91,6 +95,10 @@ def _build_config(request: GenerateRequest) -> StampConfig:
         line_thickness=request.line_thickness,
         subject_scale=request.subject_scale,
         image_scale=request.image_scale,
+        color_mode=request.color_mode,
+        color_latin=request.color_latin,
+        color_arabic=request.color_arabic,
+        color_image=request.color_image,
         threshold_level=request.threshold_level,
         edge_strength=request.edge_strength,
         black_point=request.black_point,

@@ -566,6 +566,77 @@
     .export-download-btn:hover {
       background: #1a1a17;
     }
+    /* ---------- Color swatches ---------- */
+    .color-swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .swatch {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 32px;
+      height: 32px;
+      min-height: 32px;
+      border-radius: 6px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      outline: none;
+      padding: 0;
+      transition: border-color .15s, box-shadow .15s;
+      flex-shrink: 0;
+    }
+
+    .swatch:hover {
+      box-shadow: 0 0 0 2px rgba(0,0,0,.15);
+    }
+
+    .swatch.selected {
+      border-color: #4A7CFF;
+      box-shadow: 0 0 0 2px rgba(74,124,255,.35);
+    }
+
+    .swatch-transparent {
+      background: #fff !important;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .swatch-transparent svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .color-mode-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .random-btn {
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--slider-track);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: background .15s;
+    }
+
+    .random-btn:hover {
+      background: var(--slider-fill);
+    }
   </style>
 </head>
 <body>
@@ -603,6 +674,11 @@
     <button class="rail-btn" id="railInk" title="Ink &amp; Aging" data-panel="inkPanel">
       <img src="/static/assets/icons/ink.svg" width="44" height="44" alt="Ink">
     </button>
+    <button class="rail-btn" id="railColor" title="Colors" data-panel="colorPanel">
+      <svg id="colorIcon" width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M30.5 22C30.5 26.6944 26.6944 30.5 22 30.5C17.3056 30.5 13.5 26.6944 13.5 22C13.5 17.3056 17.3056 13.5 22 13.5C26.6944 13.5 30.5 17.3056 30.5 22Z" fill="#000000" stroke="#E2E2DC"/>
+      </svg>
+    </button>
     <button class="rail-btn export-btn" id="railExport" title="Export" data-panel="exportPanel">
       <img src="/static/assets/icons/export.svg" width="56" height="60" alt="Export">
     </button>
@@ -622,8 +698,8 @@
       </div>
       <div class="slider-row" style="margin-top:10px">
         <span class="slider-label">Scale</span>
-        <input type="range" id="subject-scale" min="0.20" max="0.90" step="0.01" value="0.50">
-        <span class="slider-value" id="subject-scale-value">0.50</span>
+        <input type="range" id="subject-scale" min="0.20" max="0.90" step="0.01" value="0.70">
+        <span class="slider-value" id="subject-scale-value">0.70</span>
       </div>
     </div>
   </div>
@@ -751,7 +827,82 @@
     </div>
   </div>
 
-  <!-- ===== Panel 4: Export ===== -->
+  <!-- ===== Panel 4: Colors ===== -->
+  <div class="floating-panel" id="colorPanel">
+    <!-- Mode selector -->
+    <div class="panel-section">
+      <div class="segmented-pills" id="colorModePills">
+        <button class="pill-btn active" data-mode="unicolor">Uni</button>
+        <button class="pill-btn" data-mode="bicolor">Bi</button>
+        <button class="pill-btn" data-mode="multicolor">Multi</button>
+      </div>
+    </div>
+
+    <!-- ===== Unicolor mode ===== -->
+    <div class="color-mode-panel" id="unicolorPanel">
+      <div class="panel-section">
+        <div class="panel-label">Stamp</div>
+        <div class="color-swatches" id="uniStampSwatches"></div>
+      </div>
+      <div class="panel-divider"></div>
+      <div class="panel-section">
+        <div class="panel-label">Background</div>
+        <div class="color-swatches" id="uniBgSwatches"></div>
+      </div>
+    </div>
+
+    <!-- ===== Bicolor mode ===== -->
+    <div class="color-mode-panel" id="bicolorPanel" style="display:none">
+      <div class="panel-section">
+        <div class="color-mode-header">
+          <div class="panel-label">Fill</div>
+          <button class="random-btn" id="biRandomBtn" title="Randomize">&#x1f3b2;</button>
+        </div>
+        <div class="color-swatches" id="biFillSwatches"></div>
+      </div>
+      <div class="panel-divider"></div>
+      <div class="panel-section">
+        <div class="panel-label">Stroke</div>
+        <div class="color-swatches" id="biStrokeSwatches"></div>
+      </div>
+      <div class="panel-divider"></div>
+      <div class="panel-section">
+        <div class="panel-label">Background</div>
+        <div class="color-swatches" id="biBgSwatches"></div>
+      </div>
+    </div>
+
+    <!-- ===== Multicolor mode ===== -->
+    <div class="color-mode-panel" id="multicolorPanel" style="display:none">
+      <div class="panel-section">
+        <div class="color-mode-header">
+          <div class="panel-label">Colors</div>
+          <button class="random-btn" id="multiRandomBtn" title="Randomize">&#x1f3b2;</button>
+        </div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-label">Image</div>
+        <div class="color-swatches" id="multiImageSwatches"></div>
+      </div>
+      <div class="panel-divider"></div>
+      <div class="panel-section">
+        <div class="panel-label">Arabic text</div>
+        <div class="color-swatches" id="multiArabicSwatches"></div>
+      </div>
+      <div class="panel-divider"></div>
+      <div class="panel-section">
+        <div class="panel-label">Latin text</div>
+        <div class="color-swatches" id="multiLatinSwatches"></div>
+      </div>
+      <div class="panel-divider"></div>
+      <div class="panel-section">
+        <div class="panel-label">Background</div>
+        <div class="color-swatches" id="multiBgSwatches"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Panel 5: Export ===== -->
   <div class="floating-panel" id="exportPanel">
     <div class="panel-section">
       <button class="export-download-btn" id="download-btn">Download PNG</button>

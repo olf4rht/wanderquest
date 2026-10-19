@@ -14,6 +14,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from src.svg_template import (
+    colorize_groups,
     get_image_region,
     get_template_key,
     load_template,
@@ -37,6 +38,10 @@ def compose_stamp(
     subject_scale: float,
     image_scale: float = 1.0,
     logo_variant: int = 1,
+    color_mode: str = "unicolor",
+    color_latin: str = "#000000",
+    color_arabic: str = "#000000",
+    color_image: str = "#000000",
 ) -> Image.Image:
     """Compose a processed grayscale image into an SVG stamp template.
 
@@ -67,10 +72,17 @@ def compose_stamp(
     # 4. Get image-region geometry
     region = get_image_region(svg_content)
 
-    # 5. Prepare template SVG (make image-region and background transparent)
+    # 5. Apply multicolor if requested
+    if color_mode == "multicolor":
+        svg_content = colorize_groups(svg_content, {
+            "latin-text": color_latin,
+            "arabic-text": color_arabic,
+        })
+
+    # 6. Prepare template SVG (make image-region and background transparent)
     overlay_svg = prepare_template_svg(svg_content)
 
-    # 6. Render the prepared SVG to PNG via cairosvg
+    # 7. Render the prepared SVG to PNG via cairosvg
     overlay_png = cairosvg.svg2png(
         bytestring=overlay_svg.encode("utf-8"),
         output_width=CANVAS_SIZE,
@@ -78,13 +90,14 @@ def compose_stamp(
     )
     overlay = Image.open(io.BytesIO(overlay_png)).convert("RGBA")
 
-    # 7. Create transparent RGBA canvas
+    # 8. Create transparent RGBA canvas
     canvas = Image.new("RGBA", (CANVAS_SIZE, CANVAS_SIZE), (0, 0, 0, 0))
 
-    # 8. Place the processed image into the image-region
-    _place_image_in_region(canvas, processed_image, region, image_scale)
+    # 9. Place the processed image into the image-region (tinted if multicolor)
+    _place_image_in_region(canvas, processed_image, region, image_scale,
+                           tint_color=color_image if color_mode == "multicolor" else None)
 
-    # 9. Composite the SVG overlay on top
+    # 10. Composite the SVG overlay on top
     canvas = Image.alpha_composite(canvas, overlay)
 
     # 10. Scale the entire composition if subject_scale != 0.5
@@ -110,6 +123,7 @@ def _place_image_in_region(
     subject: Image.Image,
     region: dict,
     image_scale: float = 1.0,
+    tint_color: str | None = None,
 ) -> None:
     """Place the processed grayscale image into the template image-region.
 
@@ -160,11 +174,19 @@ def _place_image_in_region(
     offset_x = reg_x + (reg_w - new_w) // 2
     offset_y = reg_y + (reg_h - new_h) // 2
 
-    # Convert grayscale to RGBA: dark pixels → black with proportional alpha, white → transparent
+    # Convert grayscale to RGBA: dark pixels → colored with proportional alpha, white → transparent
     arr = np.array(resized, dtype=np.uint8)
     alpha = 255 - arr  # dark → high alpha, white → 0
     rgba_arr = np.zeros((new_h, new_w, 4), dtype=np.uint8)
-    # RGB stays 0 (black); alpha channel from darkness
+    if tint_color and tint_color != "#000000":
+        # Parse hex color
+        r = int(tint_color[1:3], 16)
+        g = int(tint_color[3:5], 16)
+        b = int(tint_color[5:7], 16)
+        rgba_arr[:, :, 0] = r
+        rgba_arr[:, :, 1] = g
+        rgba_arr[:, :, 2] = b
+    # else RGB stays 0 (black)
     rgba_arr[:, :, 3] = alpha
     subject_rgba = Image.fromarray(rgba_arr, "RGBA")
 

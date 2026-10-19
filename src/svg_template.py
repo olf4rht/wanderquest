@@ -162,6 +162,29 @@ def prepare_template_svg(svg_content: str) -> str:
     return ET.tostring(root, encoding="unicode", xml_declaration=False)
 
 
+def colorize_groups(svg_content: str, colors: dict[str, str]) -> str:
+    """Set fill colors on semantic groups (latin-text, arabic-text).
+
+    Args:
+        svg_content: Raw SVG string with semantic group IDs.
+        colors: Map of group id → hex color, e.g. {"latin-text": "#B13623"}.
+
+    Returns:
+        Modified SVG string.
+    """
+    root = ET.fromstring(svg_content)
+    for group_id, color in colors.items():
+        group = _find_group_by_id(root, group_id)
+        if group is None:
+            continue
+        for elem in group.iter():
+            if elem.get("fill") and elem.get("fill") != "none":
+                elem.set("fill", color)
+            if elem.get("stroke") and elem.get("stroke") != "none":
+                elem.set("stroke", color)
+    return ET.tostring(root, encoding="unicode", xml_declaration=False)
+
+
 def update_date_text(svg_content: str, date_start: str, date_end: str) -> str:
     """Update date text in layout 1 SVGs.
 
