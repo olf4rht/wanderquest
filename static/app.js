@@ -19,6 +19,7 @@ let biStroke = '#B13623';
 let biBg = 'transparent';
 let multiImage = '#000000';
 let multiImageStroke = '#3E160E';
+let multiImageBg = 'transparent';
 let multiArabic = '#908C60';
 let multiArabicStroke = '#3E160E';
 let multiLatin = '#3E160E';
@@ -101,6 +102,7 @@ function getConfig() {
     color_arabic_stroke: multiArabicStroke,
     color_image: multiImage,
     color_image_stroke: multiImageStroke,
+    color_image_bg: multiImageBg,
   };
 }
 
@@ -550,6 +552,7 @@ wireDot('biBgDot', () => biBg, true, (c) => { biBg = c; applyAndRefresh(); });
 // Multicolor
 wireDot('multiImageDot', () => multiImage, false, (c) => { multiImage = c; applyAndRefresh(); });
 wireDot('multiImageStrokeDot', () => multiImageStroke, false, (c) => { multiImageStroke = c; applyAndRefresh(); });
+wireDot('multiImageBgDot', () => multiImageBg, true, (c) => { multiImageBg = c; applyAndRefresh(); });
 wireDot('multiArabicDot', () => multiArabic, false, (c) => { multiArabic = c; applyAndRefresh(); });
 wireDot('multiArabicStrokeDot', () => multiArabicStroke, false, (c) => { multiArabicStroke = c; applyAndRefresh(); });
 wireDot('multiLatinDot', () => multiLatin, false, (c) => { multiLatin = c; applyAndRefresh(); });
@@ -584,7 +587,7 @@ function refreshAllDots() {
   const dotMap = {
     uniStampDot: stampColor, uniBgDot: bgColor,
     biFillDot: biFill, biStrokeDot: biStroke, biBgDot: biBg,
-    multiImageDot: multiImage, multiImageStrokeDot: multiImageStroke,
+    multiImageDot: multiImage, multiImageStrokeDot: multiImageStroke, multiImageBgDot: multiImageBg,
     multiArabicDot: multiArabic, multiArabicStrokeDot: multiArabicStroke,
     multiLatinDot: multiLatin, multiBgDot: multiBg,
   };
@@ -617,6 +620,7 @@ document.getElementById('multiRandomBtn').addEventListener('click', () => {
   const pool = BRAND_COLORS.slice();
   multiImage = pickRandom(pool);
   multiImageStroke = pickRandom(pool.filter(c => c !== multiImage));
+  multiImageBg = pickRandom([...pool.filter(c => c !== multiImage), 'transparent']);
   multiArabic = pickRandom(pool.filter(c => c !== multiImage));
   multiArabicStroke = pickRandom(pool.filter(c => c !== multiArabic));
   multiLatin = pickRandom(pool.filter(c => c !== multiImage && c !== multiArabic));

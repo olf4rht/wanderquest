@@ -73,6 +73,7 @@ class GenerateRequest(BaseModel):
     color_arabic_stroke: str = "#000000"
     color_image: str = "#000000"
     color_image_stroke: str = "#000000"
+    color_image_bg: str = "transparent"
     threshold_level: int = 75
     edge_strength: float = 0.70
     black_point: int = 0
@@ -103,6 +104,7 @@ def _build_config(request: GenerateRequest) -> StampConfig:
         color_arabic_stroke=request.color_arabic_stroke,
         color_image=request.color_image,
         color_image_stroke=request.color_image_stroke,
+        color_image_bg=request.color_image_bg,
         threshold_level=request.threshold_level,
         edge_strength=request.edge_strength,
         black_point=request.black_point,

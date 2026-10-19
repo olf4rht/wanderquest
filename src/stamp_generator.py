@@ -27,6 +27,7 @@ class StampConfig:
     color_arabic_stroke: str = "#000000"
     color_image: str = "#000000"
     color_image_stroke: str = "#000000"
+    color_image_bg: str = "transparent"
     threshold_level: int = 75
     edge_strength: float = 0.70
     black_point: int = 0
@@ -78,7 +79,7 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
         config.edge_bleed, config.canvas_width, config.canvas_height,
         config.logo_variant, config.color_mode, config.color_latin,
         config.color_arabic, config.color_arabic_stroke,
-        config.color_image, config.color_image_stroke,
+        config.color_image, config.color_image_stroke, config.color_image_bg,
     )
     if _final_cache and _final_cache[0] == final_key:
         return _final_cache[1].copy()
@@ -115,7 +116,7 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
         config.date_start, config.date_end, config.subject_scale, config.image_scale,
         config.logo_variant, config.color_mode, config.color_latin,
         config.color_arabic, config.color_arabic_stroke,
-        config.color_image, config.color_image_stroke,
+        config.color_image, config.color_image_stroke, config.color_image_bg,
     )
 
     if _compose_cache and _compose_cache[0] == compose_key:
@@ -138,6 +139,7 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
             color_arabic_stroke=config.color_arabic_stroke,
             color_image=config.color_image,
             color_image_stroke=config.color_image_stroke,
+            color_image_bg=config.color_image_bg,
         )
         _compose_cache = (compose_key, composed.copy())
 

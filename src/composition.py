@@ -44,6 +44,7 @@ def compose_stamp(
     color_arabic_stroke: str = "#000000",
     color_image: str = "#000000",
     color_image_stroke: str = "#000000",
+    color_image_bg: str = "transparent",
 ) -> Image.Image:
     """Compose a processed grayscale image into an SVG stamp template.
 
@@ -98,7 +99,8 @@ def compose_stamp(
     # 9. Place the processed image into the image-region (tinted if multicolor)
     _place_image_in_region(canvas, processed_image, region, image_scale,
                            tint_color=color_image if color_mode == "multicolor" else None,
-                           stroke_color=color_image_stroke if color_mode == "multicolor" else None)
+                           stroke_color=color_image_stroke if color_mode == "multicolor" else None,
+                           bg_color=color_image_bg if color_mode == "multicolor" else None)
 
     # 10. Composite the SVG overlay on top
     canvas = Image.alpha_composite(canvas, overlay)
@@ -128,6 +130,7 @@ def _place_image_in_region(
     image_scale: float = 1.0,
     tint_color: str | None = None,
     stroke_color: str | None = None,
+    bg_color: str | None = None,
 ) -> None:
     """Place the processed grayscale image into the template image-region.
 
@@ -245,6 +248,20 @@ def _place_image_in_region(
     clip_arr = np.array(full_clip)
     placed_arr[:, :, 3] = np.minimum(placed_arr[:, :, 3], clip_arr)
     clipped = Image.fromarray(placed_arr, "RGBA")
+
+    # If bg_color, fill the region shape with that color behind the image
+    if bg_color and bg_color != "transparent":
+        br = int(bg_color[1:3], 16)
+        bg = int(bg_color[3:5], 16)
+        bb = int(bg_color[5:7], 16)
+        bg_layer = Image.new("RGBA", (CANVAS_SIZE, CANVAS_SIZE), (0, 0, 0, 0))
+        bg_region = Image.new("RGBA", (reg_w, reg_h), (br, bg, bb, 255))
+        bg_layer.paste(bg_region, (reg_x, reg_y))
+        # Clip bg to region shape
+        bg_arr = np.array(bg_layer)
+        bg_arr[:, :, 3] = np.minimum(bg_arr[:, :, 3], clip_arr)
+        bg_clipped = Image.fromarray(bg_arr, "RGBA")
+        canvas.paste(Image.alpha_composite(canvas, bg_clipped), (0, 0))
 
     # Composite onto canvas
     canvas.paste(Image.alpha_composite(canvas, clipped), (0, 0))
