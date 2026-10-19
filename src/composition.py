@@ -35,6 +35,7 @@ def compose_stamp(
     date_start: str,
     date_end: str,
     subject_scale: float,
+    image_scale: float = 1.0,
     logo_variant: int = 1,
 ) -> Image.Image:
     """Compose a processed grayscale image into an SVG stamp template.
@@ -81,7 +82,7 @@ def compose_stamp(
     canvas = Image.new("RGBA", (CANVAS_SIZE, CANVAS_SIZE), (0, 0, 0, 0))
 
     # 8. Place the processed image into the image-region
-    _place_image_in_region(canvas, processed_image, region)
+    _place_image_in_region(canvas, processed_image, region, image_scale)
 
     # 9. Composite the SVG overlay on top
     canvas = Image.alpha_composite(canvas, overlay)
@@ -108,6 +109,7 @@ def _place_image_in_region(
     canvas: Image.Image,
     subject: Image.Image,
     region: dict,
+    image_scale: float = 1.0,
 ) -> None:
     """Place the processed grayscale image into the template image-region.
 
@@ -142,7 +144,7 @@ def _place_image_in_region(
     # Scale subject to cover the region completely
     src_w, src_h = subject.size
     cover_scale = max(reg_w / max(src_w, 1), reg_h / max(src_h, 1))
-    final_scale = cover_scale
+    final_scale = cover_scale * image_scale
 
     new_w = max(1, int(round(src_w * final_scale)))
     new_h = max(1, int(round(src_h * final_scale)))

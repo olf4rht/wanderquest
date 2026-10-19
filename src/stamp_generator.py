@@ -20,6 +20,7 @@ class StampConfig:
     edge_bleed: float = 0.20
     line_thickness: int = 2
     subject_scale: float = 0.50
+    image_scale: float = 1.0
     threshold_level: int = 75
     edge_strength: float = 0.70
     black_point: int = 0
@@ -103,7 +104,7 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
     compose_key = _make_key(
         cleanup_key,
         config.shape, config.date_enabled, config.date_layout,
-        config.date_start, config.date_end, config.subject_scale,
+        config.date_start, config.date_end, config.subject_scale, config.image_scale,
         config.logo_variant,
     )
 
@@ -119,6 +120,7 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
             date_start=config.date_start,
             date_end=config.date_end,
             subject_scale=config.subject_scale,
+            image_scale=config.image_scale,
             logo_variant=config.logo_variant,
         )
         _compose_cache = (compose_key, composed.copy())

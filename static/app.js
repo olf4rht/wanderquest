@@ -71,10 +71,11 @@ function getConfig() {
     ink_density: 0.50,
     wear: parseFloat(document.getElementById('wear').value),
     edge_bleed: 0.20,
-    line_thickness: parseInt(document.getElementById('line-thickness').value, 10),
+    line_thickness: 2,
     subject_scale: parseFloat(document.getElementById('subject-scale').value),
+    image_scale: parseFloat(document.getElementById('image-scale').value),
     threshold_level: parseInt(document.getElementById('threshold-level').value, 10),
-    edge_strength: parseFloat(document.getElementById('edge-strength').value),
+    edge_strength: 0.70,
     black_point: parseInt(document.getElementById('black-point').value, 10),
     white_point: parseInt(document.getElementById('white-point').value, 10),
     invert: document.getElementById('invert-toggle').checked,
@@ -201,8 +202,8 @@ _fileInput.addEventListener('change', () => {
 });
 
 // Image processing sliders — normal debounce (triggers full pipeline)
-['threshold-level', 'edge-strength', 'black-point', 'white-point',
- 'line-thickness', 'subject-scale', 'canvasWidth', 'canvasHeight'
+['threshold-level', 'black-point', 'white-point',
+ 'subject-scale', 'image-scale', 'canvasWidth', 'canvasHeight'
 ].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('input', debouncedGenerate);
