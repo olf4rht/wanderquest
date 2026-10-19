@@ -114,6 +114,10 @@ async def generate(request: GenerateRequest):
 
     config = _build_config(request)
 
+    if request.export:
+        config.canvas_width *= 2
+        config.canvas_height *= 2
+
     try:
         result = generate_stamp(image_bytes, config)
     except Exception as e:
