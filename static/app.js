@@ -19,6 +19,7 @@ let biStroke = '#B13623';
 let biBg = 'transparent';
 let multiImage = '#000000';
 let multiArabic = '#908C60';
+let multiArabicStroke = '#3E160E';
 let multiLatin = '#3E160E';
 let multiBg = 'transparent';
 
@@ -96,6 +97,7 @@ function getConfig() {
     color_mode: colorMode,
     color_latin: multiLatin,
     color_arabic: multiArabic,
+    color_arabic_stroke: multiArabicStroke,
     color_image: multiImage,
   };
 }
@@ -452,6 +454,7 @@ buildSwatches('biStrokeSwatches', '#B13623');
 buildSwatches('biBgSwatches', 'transparent', { includeTransparent: true });
 buildSwatches('multiImageSwatches', '#000000');
 buildSwatches('multiArabicSwatches', '#908C60');
+buildSwatches('multiArabicStrokeSwatches', '#3E160E');
 buildSwatches('multiLatinSwatches', '#3E160E');
 buildSwatches('multiBgSwatches', 'transparent', { includeTransparent: true });
 
@@ -502,6 +505,7 @@ setupSwatchGroup('biBgSwatches', biBg, (c) => { biBg = c; applyAndRefresh(); });
 // Multicolor handlers
 setupSwatchGroup('multiImageSwatches', multiImage, (c) => { multiImage = c; applyAndRefresh(); });
 setupSwatchGroup('multiArabicSwatches', multiArabic, (c) => { multiArabic = c; applyAndRefresh(); });
+setupSwatchGroup('multiArabicStrokeSwatches', multiArabicStroke, (c) => { multiArabicStroke = c; applyAndRefresh(); });
 setupSwatchGroup('multiLatinSwatches', multiLatin, (c) => { multiLatin = c; applyAndRefresh(); });
 setupSwatchGroup('multiBgSwatches', multiBg, (c) => { multiBg = c; applyAndRefresh(); });
 
@@ -552,10 +556,12 @@ document.getElementById('multiRandomBtn').addEventListener('click', () => {
   const pool = BRAND_COLORS.slice();
   multiImage = pickRandom(pool);
   multiArabic = pickRandom(pool.filter(c => c !== multiImage));
+  multiArabicStroke = pickRandom(pool.filter(c => c !== multiArabic));
   multiLatin = pickRandom(pool.filter(c => c !== multiImage && c !== multiArabic));
   multiBg = pickRandom([...pool.filter(c => c !== multiImage && c !== multiArabic && c !== multiLatin), 'transparent']);
   selectSwatch('multiImageSwatches', multiImage);
   selectSwatch('multiArabicSwatches', multiArabic);
+  selectSwatch('multiArabicStrokeSwatches', multiArabicStroke);
   selectSwatch('multiLatinSwatches', multiLatin);
   selectSwatch('multiBgSwatches', multiBg);
   applyAndRefresh();

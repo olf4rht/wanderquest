@@ -24,6 +24,7 @@ class StampConfig:
     color_mode: str = "unicolor"
     color_latin: str = "#000000"
     color_arabic: str = "#000000"
+    color_arabic_stroke: str = "#000000"
     color_image: str = "#000000"
     threshold_level: int = 75
     edge_strength: float = 0.70
@@ -75,7 +76,7 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
         config.subject_scale, config.image_scale, config.ink_density, config.wear,
         config.edge_bleed, config.canvas_width, config.canvas_height,
         config.logo_variant, config.color_mode, config.color_latin,
-        config.color_arabic, config.color_image,
+        config.color_arabic, config.color_arabic_stroke, config.color_image,
     )
     if _final_cache and _final_cache[0] == final_key:
         return _final_cache[1].copy()
@@ -111,7 +112,7 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
         config.shape, config.date_enabled, config.date_layout,
         config.date_start, config.date_end, config.subject_scale, config.image_scale,
         config.logo_variant, config.color_mode, config.color_latin,
-        config.color_arabic, config.color_image,
+        config.color_arabic, config.color_arabic_stroke, config.color_image,
     )
 
     if _compose_cache and _compose_cache[0] == compose_key:
@@ -131,6 +132,7 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
             color_mode=config.color_mode,
             color_latin=config.color_latin,
             color_arabic=config.color_arabic,
+            color_arabic_stroke=config.color_arabic_stroke,
             color_image=config.color_image,
         )
         _compose_cache = (compose_key, composed.copy())

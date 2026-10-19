@@ -162,12 +162,17 @@ def prepare_template_svg(svg_content: str) -> str:
     return ET.tostring(root, encoding="unicode", xml_declaration=False)
 
 
-def colorize_groups(svg_content: str, colors: dict[str, str]) -> str:
+def colorize_groups(
+    svg_content: str,
+    colors: dict[str, str],
+    arabic_stroke: str | None = None,
+) -> str:
     """Set fill colors on semantic groups (latin-text, arabic-text).
 
     Args:
         svg_content: Raw SVG string with semantic group IDs.
         colors: Map of group id → hex color, e.g. {"latin-text": "#B13623"}.
+        arabic_stroke: If set, adds a colored stroke to the arabic-text group.
 
     Returns:
         Modified SVG string.
@@ -182,6 +187,15 @@ def colorize_groups(svg_content: str, colors: dict[str, str]) -> str:
                 elem.set("fill", color)
             if elem.get("stroke") and elem.get("stroke") != "none":
                 elem.set("stroke", color)
+            # Add stroke to arabic-text paths
+            if group_id == "arabic-text" and arabic_stroke:
+                tag = elem.tag
+                if "}" in tag:
+                    tag = tag.split("}", 1)[1]
+                if tag == "path":
+                    elem.set("stroke", arabic_stroke)
+                    elem.set("stroke-width", "2.5")
+                    elem.set("paint-order", "stroke fill")
     return ET.tostring(root, encoding="unicode", xml_declaration=False)
 
 

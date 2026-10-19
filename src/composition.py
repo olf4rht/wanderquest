@@ -41,6 +41,7 @@ def compose_stamp(
     color_mode: str = "unicolor",
     color_latin: str = "#000000",
     color_arabic: str = "#000000",
+    color_arabic_stroke: str = "#000000",
     color_image: str = "#000000",
 ) -> Image.Image:
     """Compose a processed grayscale image into an SVG stamp template.
@@ -77,7 +78,7 @@ def compose_stamp(
         svg_content = colorize_groups(svg_content, {
             "latin-text": color_latin,
             "arabic-text": color_arabic,
-        })
+        }, arabic_stroke=color_arabic_stroke)
 
     # 6. Prepare template SVG (make image-region and background transparent)
     overlay_svg = prepare_template_svg(svg_content)
