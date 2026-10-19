@@ -68,7 +68,7 @@ def generate_stamp(image_bytes: bytes, config: StampConfig) -> Image.Image:
         config.black_point, config.white_point, config.invert,
         config.line_thickness, config.shape, config.date_enabled,
         config.date_layout, config.date_start, config.date_end,
-        config.subject_scale, config.ink_density, config.wear,
+        config.subject_scale, config.image_scale, config.ink_density, config.wear,
         config.edge_bleed, config.canvas_width, config.canvas_height,
         config.logo_variant,
     )
