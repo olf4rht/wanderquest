@@ -453,33 +453,41 @@ body {
 
 /* ---------- Color panel ---------- */
 .color-panel {
-  background: #fefbfa;
-  border: 1px solid #e2e2dc;
-  box-shadow: 0px 10px 28px 0px rgba(0,0,0,0.1);
+  background: #fefbfa !important;
+  border-color: #e2e2dc !important;
   position: relative;
+  padding: 14px 12px !important;
+}
+
+.color-panel .panel-section {
+  margin-bottom: 8px;
 }
 
 .color-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 0;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
   width: 100%;
 }
 
 .color-row-label {
   flex: 1;
-  font-family: 'Geist Mono', monospace;
+  font-family: 'Geist Mono', var(--font-body), monospace;
   font-weight: 500;
   font-size: 12px;
+  line-height: 26px;
   color: #62625c;
   white-space: nowrap;
 }
 
-.color-dot {
+button.color-dot {
+  display: block;
   width: 26px;
   height: 26px;
   min-width: 26px;
+  min-height: 26px;
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
@@ -487,40 +495,43 @@ body {
   flex-shrink: 0;
   transition: box-shadow .15s;
   box-sizing: border-box;
-  appearance: none;
   -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 0;
+  margin: 0;
 }
 
-.color-dot:hover {
+button.color-dot:hover {
   box-shadow: 0 0 0 2px rgba(0,0,0,.12);
 }
 
-.color-dot.active {
+button.color-dot.active {
   box-shadow: 0 0 0 2px rgba(74,124,255,.5);
 }
 
-.color-dot.dot-light {
+button.color-dot.dot-light {
   border-color: #d0d0d0;
 }
 
-.color-dot.dot-transparent {
-  background: conic-gradient(#e0e0e0 0% 25%, #fff 0% 50%) 50% / 8px 8px;
-  background-repeat: repeat;
+button.color-dot.dot-transparent {
+  background: repeating-conic-gradient(#e0e0e0 0% 25%, #fff 0% 50%) 50% / 8px 8px !important;
 }
 
 .dice-btn {
-  width: 44px;
-  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 44px;
+  height: 26px;
   background: none;
   border: none;
   cursor: pointer;
   border-radius: 13px;
   padding: 0;
-  opacity: 0.7;
+  opacity: 0.65;
   transition: opacity .15s;
+  flex-shrink: 0;
 }
 
 .dice-btn:hover {
@@ -533,7 +544,7 @@ body {
   right: calc(100% + 8px);
   background: #fff;
   border-radius: 15px;
-  padding: 8px;
+  padding: 10px;
   box-shadow: 0 6px 20px rgba(0,0,0,.15);
   z-index: 100;
   border: 1px solid #e2e2dc;
@@ -541,13 +552,16 @@ body {
 
 .swatch-popover-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 35px);
   gap: 4px;
 }
 
-.swatch {
+button.swatch {
+  display: block;
   width: 35px;
   height: 35px;
+  min-width: 35px;
+  min-height: 35px;
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;
@@ -555,26 +569,29 @@ body {
   transition: border-color .15s, box-shadow .15s;
   box-sizing: border-box;
   flex-shrink: 0;
-  appearance: none;
   -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 0;
+  margin: 0;
 }
 
-.swatch:hover {
+button.swatch:hover {
   box-shadow: 0 0 0 2px rgba(0,0,0,.15);
 }
 
-.swatch.selected {
+button.swatch.selected {
   border-color: #4A7CFF;
   box-shadow: 0 0 0 2px rgba(74,124,255,.35);
 }
 
-.swatch-transparent {
+button.swatch.swatch-transparent {
   background: #fff;
   position: relative;
   overflow: hidden;
 }
 
-.swatch-transparent svg {
+button.swatch.swatch-transparent svg {
   position: absolute;
   top: 0;
   left: 0;
@@ -582,6 +599,6 @@ body {
   height: 100%;
 }
 
-.swatch.swatch-light {
+button.swatch.swatch-light {
   border-color: #d0d0d0;
 }
