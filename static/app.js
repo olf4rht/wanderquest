@@ -18,6 +18,7 @@ let biFill = '#000000';
 let biStroke = '#B13623';
 let biBg = 'transparent';
 let multiImage = '#000000';
+let multiImageStroke = '#3E160E';
 let multiArabic = '#908C60';
 let multiArabicStroke = '#3E160E';
 let multiLatin = '#3E160E';
@@ -99,6 +100,7 @@ function getConfig() {
     color_arabic: multiArabic,
     color_arabic_stroke: multiArabicStroke,
     color_image: multiImage,
+    color_image_stroke: multiImageStroke,
   };
 }
 
@@ -402,7 +404,7 @@ async function applyColors(blob) {
 }
 
 // ---------------------------------------------------------------------------
-// Color swatches — brand palette
+// Color system — brand palette with dot + popover
 // ---------------------------------------------------------------------------
 const BRAND_COLORS = [
   '#000000', '#FFFFFF', '#F6F6F6', '#C4C4C4', '#908C60',
@@ -412,53 +414,84 @@ const BRAND_COLORS = [
 
 const LIGHT_COLORS = new Set(['#FFFFFF', '#F6F6F6', '#FFFAE2', '#FFF3C0']);
 
-function buildSwatches(containerId, selected, opts) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  const colors = opts?.includeTransparent
-    ? ['transparent', ...BRAND_COLORS]
-    : BRAND_COLORS;
+const previewArea = document.getElementById('artboard');
+const popover = document.getElementById('swatchPopover');
+const popoverGrid = document.getElementById('swatchPopoverGrid');
+let activePopoverDot = null;
+let activePopoverCallback = null;
 
+function updateDotColor(dot, color) {
+  dot.classList.toggle('dot-light', LIGHT_COLORS.has(color));
+  dot.classList.toggle('dot-transparent', color === 'transparent');
+  if (color === 'transparent') {
+    dot.style.background = '';
+  } else {
+    dot.style.background = color;
+  }
+}
+
+function openSwatchPopover(dot, currentColor, includeTransparent, onSelect) {
+  // Close if same dot clicked again
+  if (activePopoverDot === dot && popover.style.display !== 'none') {
+    closePopover();
+    return;
+  }
+
+  // Deactivate previous dot
+  if (activePopoverDot) activePopoverDot.classList.remove('active');
+  activePopoverDot = dot;
+  activePopoverCallback = onSelect;
+  dot.classList.add('active');
+
+  // Build grid
+  popoverGrid.innerHTML = '';
+  const colors = includeTransparent ? ['transparent', ...BRAND_COLORS] : BRAND_COLORS;
   colors.forEach(color => {
     const btn = document.createElement('button');
-    btn.className = 'swatch' + (color === selected ? ' selected' : '');
+    btn.className = 'swatch' + (color === currentColor ? ' selected' : '');
     btn.dataset.color = color;
     if (color === 'transparent') {
       btn.classList.add('swatch-transparent');
-      btn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24"><rect width="12" height="12" fill="#ccc"/><rect x="12" y="12" width="12" height="12" fill="#ccc"/><rect x="12" width="12" height="12" fill="#fff"/><rect y="12" width="12" height="12" fill="#fff"/></svg>';
+      btn.innerHTML = '<svg width="28" height="28" viewBox="0 0 28 28"><rect width="14" height="14" fill="#ccc"/><rect x="14" y="14" width="14" height="14" fill="#ccc"/><rect x="14" width="14" height="14" fill="#fff"/><rect y="14" width="14" height="14" fill="#fff"/></svg>';
     } else {
       btn.style.background = color;
-      if (LIGHT_COLORS.has(color)) btn.style.border = '1px solid #ccc';
+      if (LIGHT_COLORS.has(color)) btn.classList.add('swatch-light');
     }
-    container.appendChild(btn);
-  });
-}
-
-function setupSwatchGroup(containerId, currentValue, onChange) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.querySelectorAll('.swatch').forEach(btn => {
     btn.addEventListener('click', () => {
-      container.querySelectorAll('.swatch').forEach(b => b.classList.remove('selected'));
+      popoverGrid.querySelectorAll('.swatch').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
-      onChange(btn.dataset.color);
+      updateDotColor(dot, color);
+      onSelect(color);
     });
+    popoverGrid.appendChild(btn);
   });
+
+  // Position popover next to the dot's row
+  const row = dot.closest('.color-row');
+  const panel = document.getElementById('colorPanel');
+  const rowRect = row.getBoundingClientRect();
+  const panelRect = panel.getBoundingClientRect();
+  popover.style.display = '';
+  popover.style.top = (rowRect.top - panelRect.top) + 'px';
+
+  // Show
+  popover.style.display = '';
 }
 
-// Build all swatch grids
-buildSwatches('uniStampSwatches', '#000000');
-buildSwatches('uniBgSwatches', 'transparent', { includeTransparent: true });
-buildSwatches('biFillSwatches', '#000000');
-buildSwatches('biStrokeSwatches', '#B13623');
-buildSwatches('biBgSwatches', 'transparent', { includeTransparent: true });
-buildSwatches('multiImageSwatches', '#000000');
-buildSwatches('multiArabicSwatches', '#908C60');
-buildSwatches('multiArabicStrokeSwatches', '#3E160E');
-buildSwatches('multiLatinSwatches', '#3E160E');
-buildSwatches('multiBgSwatches', 'transparent', { includeTransparent: true });
+function closePopover() {
+  popover.style.display = 'none';
+  if (activePopoverDot) activePopoverDot.classList.remove('active');
+  activePopoverDot = null;
+  activePopoverCallback = null;
+}
 
-const previewArea = document.getElementById('artboard');
+// Close popover on outside click
+document.addEventListener('click', (e) => {
+  if (popover.style.display === 'none') return;
+  if (popover.contains(e.target)) return;
+  if (e.target.classList.contains('color-dot')) return;
+  closePopover();
+});
 
 function updateBgPreview() {
   const bg = getActiveBgColor();
@@ -487,31 +520,45 @@ function applyAndRefresh() {
   updateBgPreview();
   updateIconColor();
   if (colorMode === 'multicolor') {
-    debouncedGenerate();  // server-side coloring — need fresh API call
+    debouncedGenerate();
   } else {
     retintStamp();
   }
 }
 
-// Unicolor handlers
-setupSwatchGroup('uniStampSwatches', stampColor, (c) => { stampColor = c; applyAndRefresh(); });
-setupSwatchGroup('uniBgSwatches', bgColor, (c) => { bgColor = c; applyAndRefresh(); });
+// ---------------------------------------------------------------------------
+// Wire up color dots
+// ---------------------------------------------------------------------------
+function wireDot(dotId, getCurrentColor, isBackground, onSelect) {
+  const dot = document.getElementById(dotId);
+  if (!dot) return;
+  updateDotColor(dot, getCurrentColor());
+  dot.addEventListener('click', () => {
+    openSwatchPopover(dot, getCurrentColor(), isBackground, onSelect);
+  });
+}
 
-// Bicolor handlers
-setupSwatchGroup('biFillSwatches', biFill, (c) => { biFill = c; applyAndRefresh(); });
-setupSwatchGroup('biStrokeSwatches', biStroke, (c) => { biStroke = c; applyAndRefresh(); });
-setupSwatchGroup('biBgSwatches', biBg, (c) => { biBg = c; applyAndRefresh(); });
+// Unicolor
+wireDot('uniStampDot', () => stampColor, false, (c) => { stampColor = c; applyAndRefresh(); });
+wireDot('uniBgDot', () => bgColor, true, (c) => { bgColor = c; applyAndRefresh(); });
 
-// Multicolor handlers
-setupSwatchGroup('multiImageSwatches', multiImage, (c) => { multiImage = c; applyAndRefresh(); });
-setupSwatchGroup('multiArabicSwatches', multiArabic, (c) => { multiArabic = c; applyAndRefresh(); });
-setupSwatchGroup('multiArabicStrokeSwatches', multiArabicStroke, (c) => { multiArabicStroke = c; applyAndRefresh(); });
-setupSwatchGroup('multiLatinSwatches', multiLatin, (c) => { multiLatin = c; applyAndRefresh(); });
-setupSwatchGroup('multiBgSwatches', multiBg, (c) => { multiBg = c; applyAndRefresh(); });
+// Bicolor
+wireDot('biFillDot', () => biFill, false, (c) => { biFill = c; applyAndRefresh(); });
+wireDot('biStrokeDot', () => biStroke, false, (c) => { biStroke = c; applyAndRefresh(); });
+wireDot('biBgDot', () => biBg, true, (c) => { biBg = c; applyAndRefresh(); });
+
+// Multicolor
+wireDot('multiImageDot', () => multiImage, false, (c) => { multiImage = c; applyAndRefresh(); });
+wireDot('multiImageStrokeDot', () => multiImageStroke, false, (c) => { multiImageStroke = c; applyAndRefresh(); });
+wireDot('multiArabicDot', () => multiArabic, false, (c) => { multiArabic = c; applyAndRefresh(); });
+wireDot('multiArabicStrokeDot', () => multiArabicStroke, false, (c) => { multiArabicStroke = c; applyAndRefresh(); });
+wireDot('multiLatinDot', () => multiLatin, false, (c) => { multiLatin = c; applyAndRefresh(); });
+wireDot('multiBgDot', () => multiBg, true, (c) => { multiBg = c; applyAndRefresh(); });
 
 // Mode switching
 document.querySelectorAll('#colorModePills .pill-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    closePopover();
     const prevMode = colorMode;
     document.querySelectorAll('#colorModePills .pill-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -521,7 +568,6 @@ document.querySelectorAll('#colorModePills .pill-btn').forEach(btn => {
     document.getElementById('multicolorPanel').style.display = colorMode === 'multicolor' ? '' : 'none';
     updateBgPreview();
     updateIconColor();
-    // Switching to/from multicolor needs fresh API call (server-side coloring)
     if (colorMode === 'multicolor' || prevMode === 'multicolor') {
       generateStamp();
     } else {
@@ -530,40 +576,53 @@ document.querySelectorAll('#colorModePills .pill-btn').forEach(btn => {
   });
 });
 
-// Random button helpers
+// Random helpers
 function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-function selectSwatch(containerId, color) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.querySelectorAll('.swatch').forEach(b => {
-    b.classList.toggle('selected', b.dataset.color === color);
-  });
+function refreshAllDots() {
+  // Re-sync dot colors with state
+  const dotMap = {
+    uniStampDot: stampColor, uniBgDot: bgColor,
+    biFillDot: biFill, biStrokeDot: biStroke, biBgDot: biBg,
+    multiImageDot: multiImage, multiImageStrokeDot: multiImageStroke,
+    multiArabicDot: multiArabic, multiArabicStrokeDot: multiArabicStroke,
+    multiLatinDot: multiLatin, multiBgDot: multiBg,
+  };
+  for (const [id, color] of Object.entries(dotMap)) {
+    const d = document.getElementById(id);
+    if (d) updateDotColor(d, color);
+  }
 }
+
+document.getElementById('uniRandomBtn').addEventListener('click', () => {
+  const pool = BRAND_COLORS.slice();
+  stampColor = pickRandom(pool);
+  bgColor = pickRandom([...pool.filter(c => c !== stampColor), 'transparent']);
+  closePopover();
+  refreshAllDots();
+  applyAndRefresh();
+});
 
 document.getElementById('biRandomBtn').addEventListener('click', () => {
   const pool = BRAND_COLORS.slice();
   biFill = pickRandom(pool);
   biStroke = pickRandom(pool.filter(c => c !== biFill));
   biBg = pickRandom([...pool.filter(c => c !== biFill && c !== biStroke), 'transparent']);
-  selectSwatch('biFillSwatches', biFill);
-  selectSwatch('biStrokeSwatches', biStroke);
-  selectSwatch('biBgSwatches', biBg);
+  closePopover();
+  refreshAllDots();
   applyAndRefresh();
 });
 
 document.getElementById('multiRandomBtn').addEventListener('click', () => {
   const pool = BRAND_COLORS.slice();
   multiImage = pickRandom(pool);
+  multiImageStroke = pickRandom(pool.filter(c => c !== multiImage));
   multiArabic = pickRandom(pool.filter(c => c !== multiImage));
   multiArabicStroke = pickRandom(pool.filter(c => c !== multiArabic));
   multiLatin = pickRandom(pool.filter(c => c !== multiImage && c !== multiArabic));
   multiBg = pickRandom([...pool.filter(c => c !== multiImage && c !== multiArabic && c !== multiLatin), 'transparent']);
-  selectSwatch('multiImageSwatches', multiImage);
-  selectSwatch('multiArabicSwatches', multiArabic);
-  selectSwatch('multiArabicStrokeSwatches', multiArabicStroke);
-  selectSwatch('multiLatinSwatches', multiLatin);
-  selectSwatch('multiBgSwatches', multiBg);
+  closePopover();
+  refreshAllDots();
   applyAndRefresh();
 });
 

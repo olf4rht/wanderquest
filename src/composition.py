@@ -43,6 +43,7 @@ def compose_stamp(
     color_arabic: str = "#000000",
     color_arabic_stroke: str = "#000000",
     color_image: str = "#000000",
+    color_image_stroke: str = "#000000",
 ) -> Image.Image:
     """Compose a processed grayscale image into an SVG stamp template.
 
@@ -96,7 +97,8 @@ def compose_stamp(
 
     # 9. Place the processed image into the image-region (tinted if multicolor)
     _place_image_in_region(canvas, processed_image, region, image_scale,
-                           tint_color=color_image if color_mode == "multicolor" else None)
+                           tint_color=color_image if color_mode == "multicolor" else None,
+                           stroke_color=color_image_stroke if color_mode == "multicolor" else None)
 
     # 10. Composite the SVG overlay on top
     canvas = Image.alpha_composite(canvas, overlay)
@@ -125,6 +127,7 @@ def _place_image_in_region(
     region: dict,
     image_scale: float = 1.0,
     tint_color: str | None = None,
+    stroke_color: str | None = None,
 ) -> None:
     """Place the processed grayscale image into the template image-region.
 
@@ -190,6 +193,27 @@ def _place_image_in_region(
     # else RGB stays 0 (black)
     rgba_arr[:, :, 3] = alpha
     subject_rgba = Image.fromarray(rgba_arr, "RGBA")
+
+    # If stroke_color, create a dilated outline behind the fill
+    if stroke_color:
+        stroke_radius = 3  # ~2.5px stroke
+        # Dilate alpha using PIL's MaxFilter for a fast max-pool
+        alpha_img = Image.fromarray(alpha, "L")
+        from PIL import ImageFilter
+        for _ in range(stroke_radius):
+            alpha_img = alpha_img.filter(ImageFilter.MaxFilter(3))
+        dilated_alpha = np.array(alpha_img, dtype=np.uint8)
+        sr = int(stroke_color[1:3], 16)
+        sg = int(stroke_color[3:5], 16)
+        sb = int(stroke_color[5:7], 16)
+        stroke_arr = np.zeros((new_h, new_w, 4), dtype=np.uint8)
+        stroke_arr[:, :, 0] = sr
+        stroke_arr[:, :, 1] = sg
+        stroke_arr[:, :, 2] = sb
+        stroke_arr[:, :, 3] = dilated_alpha
+        stroke_rgba = Image.fromarray(stroke_arr, "RGBA")
+        # Composite: stroke behind fill
+        subject_rgba = Image.alpha_composite(stroke_rgba, subject_rgba)
 
     # Create clip mask for the region shape
     clip_mask = Image.new("L", (reg_w, reg_h), 0)

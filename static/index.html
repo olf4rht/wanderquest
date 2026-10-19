@@ -828,7 +828,7 @@
   </div>
 
   <!-- ===== Panel 4: Colors ===== -->
-  <div class="floating-panel" id="colorPanel">
+  <div class="floating-panel color-panel" id="colorPanel">
     <!-- Mode selector -->
     <div class="panel-section">
       <div class="segmented-pills" id="colorModePills">
@@ -840,70 +840,81 @@
 
     <!-- ===== Unicolor mode ===== -->
     <div class="color-mode-panel" id="unicolorPanel">
-      <div class="panel-section">
-        <div class="panel-label">Stamp</div>
-        <div class="color-swatches" id="uniStampSwatches"></div>
+      <div class="color-row" data-swatch-target="uniRandom">
+        <span class="color-row-label">Random Generation</span>
+        <button class="dice-btn" id="uniRandomBtn" title="Randomize">
+          <svg width="22" height="22" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="24" height="11" rx="3" stroke="#62625c" stroke-width="1.5" fill="none"/><rect x="1" y="14" width="24" height="11" rx="3" stroke="#62625c" stroke-width="1.5" fill="none"/><circle cx="7" cy="6.5" r="1.5" fill="#62625c"/><circle cx="19" cy="6.5" r="1.5" fill="#62625c"/><circle cx="7" cy="19.5" r="1.5" fill="#62625c"/><circle cx="13" cy="19.5" r="1.5" fill="#62625c"/><circle cx="19" cy="19.5" r="1.5" fill="#62625c"/></svg>
+        </button>
       </div>
-      <div class="panel-divider"></div>
-      <div class="panel-section">
-        <div class="panel-label">Background</div>
-        <div class="color-swatches" id="uniBgSwatches"></div>
+      <div class="color-row" data-swatch-target="uniStampSwatches">
+        <span class="color-row-label">Stamp</span>
+        <button class="color-dot" id="uniStampDot"></button>
+      </div>
+      <div class="color-row" data-swatch-target="uniBgSwatches">
+        <span class="color-row-label">Background</span>
+        <button class="color-dot" id="uniBgDot"></button>
       </div>
     </div>
 
     <!-- ===== Bicolor mode ===== -->
     <div class="color-mode-panel" id="bicolorPanel" style="display:none">
-      <div class="panel-section">
-        <div class="color-mode-header">
-          <div class="panel-label">Fill</div>
-          <button class="random-btn" id="biRandomBtn" title="Randomize">&#x1f3b2;</button>
-        </div>
-        <div class="color-swatches" id="biFillSwatches"></div>
+      <div class="color-row">
+        <span class="color-row-label">Random Generation</span>
+        <button class="dice-btn" id="biRandomBtn" title="Randomize">
+          <svg width="22" height="22" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="24" height="11" rx="3" stroke="#62625c" stroke-width="1.5" fill="none"/><rect x="1" y="14" width="24" height="11" rx="3" stroke="#62625c" stroke-width="1.5" fill="none"/><circle cx="7" cy="6.5" r="1.5" fill="#62625c"/><circle cx="19" cy="6.5" r="1.5" fill="#62625c"/><circle cx="7" cy="19.5" r="1.5" fill="#62625c"/><circle cx="13" cy="19.5" r="1.5" fill="#62625c"/><circle cx="19" cy="19.5" r="1.5" fill="#62625c"/></svg>
+        </button>
       </div>
-      <div class="panel-divider"></div>
-      <div class="panel-section">
-        <div class="panel-label">Stroke</div>
-        <div class="color-swatches" id="biStrokeSwatches"></div>
+      <div class="color-row" data-swatch-target="biFillSwatches">
+        <span class="color-row-label">Fill</span>
+        <button class="color-dot" id="biFillDot"></button>
       </div>
-      <div class="panel-divider"></div>
-      <div class="panel-section">
-        <div class="panel-label">Background</div>
-        <div class="color-swatches" id="biBgSwatches"></div>
+      <div class="color-row" data-swatch-target="biStrokeSwatches">
+        <span class="color-row-label">Stroke</span>
+        <button class="color-dot" id="biStrokeDot"></button>
+      </div>
+      <div class="color-row" data-swatch-target="biBgSwatches">
+        <span class="color-row-label">Background</span>
+        <button class="color-dot" id="biBgDot"></button>
       </div>
     </div>
 
     <!-- ===== Multicolor mode ===== -->
     <div class="color-mode-panel" id="multicolorPanel" style="display:none">
-      <div class="panel-section">
-        <div class="color-mode-header">
-          <div class="panel-label">Colors</div>
-          <button class="random-btn" id="multiRandomBtn" title="Randomize">&#x1f3b2;</button>
-        </div>
+      <div class="color-row">
+        <span class="color-row-label">Random Generation</span>
+        <button class="dice-btn" id="multiRandomBtn" title="Randomize">
+          <svg width="22" height="22" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="24" height="11" rx="3" stroke="#62625c" stroke-width="1.5" fill="none"/><rect x="1" y="14" width="24" height="11" rx="3" stroke="#62625c" stroke-width="1.5" fill="none"/><circle cx="7" cy="6.5" r="1.5" fill="#62625c"/><circle cx="19" cy="6.5" r="1.5" fill="#62625c"/><circle cx="7" cy="19.5" r="1.5" fill="#62625c"/><circle cx="13" cy="19.5" r="1.5" fill="#62625c"/><circle cx="19" cy="19.5" r="1.5" fill="#62625c"/></svg>
+        </button>
       </div>
-      <div class="panel-section">
-        <div class="panel-label">Image</div>
-        <div class="color-swatches" id="multiImageSwatches"></div>
+      <div class="color-row" data-swatch-target="multiImageSwatches">
+        <span class="color-row-label">Image</span>
+        <button class="color-dot" id="multiImageDot"></button>
       </div>
-      <div class="panel-divider"></div>
-      <div class="panel-section">
-        <div class="panel-label">Arabic text fill</div>
-        <div class="color-swatches" id="multiArabicSwatches"></div>
+      <div class="color-row" data-swatch-target="multiImageStrokeSwatches">
+        <span class="color-row-label">Image Stroke</span>
+        <button class="color-dot" id="multiImageStrokeDot"></button>
       </div>
-      <div class="panel-divider"></div>
-      <div class="panel-section">
-        <div class="panel-label">Arabic text stroke</div>
-        <div class="color-swatches" id="multiArabicStrokeSwatches"></div>
+      <div class="color-row" data-swatch-target="multiArabicSwatches">
+        <span class="color-row-label">Arabic Text</span>
+        <button class="color-dot" id="multiArabicDot"></button>
       </div>
-      <div class="panel-divider"></div>
-      <div class="panel-section">
-        <div class="panel-label">Latin text</div>
-        <div class="color-swatches" id="multiLatinSwatches"></div>
+      <div class="color-row" data-swatch-target="multiArabicStrokeSwatches">
+        <span class="color-row-label">Arabic Text Stroke</span>
+        <button class="color-dot" id="multiArabicStrokeDot"></button>
       </div>
-      <div class="panel-divider"></div>
-      <div class="panel-section">
-        <div class="panel-label">Background</div>
-        <div class="color-swatches" id="multiBgSwatches"></div>
+      <div class="color-row" data-swatch-target="multiLatinSwatches">
+        <span class="color-row-label">Latin Text</span>
+        <button class="color-dot" id="multiLatinDot"></button>
       </div>
+      <div class="color-row" data-swatch-target="multiBgSwatches">
+        <span class="color-row-label">Background</span>
+        <button class="color-dot" id="multiBgDot"></button>
+      </div>
+    </div>
+
+    <!-- Swatch popover (shared, repositioned on click) -->
+    <div class="swatch-popover" id="swatchPopover" style="display:none">
+      <div class="swatch-popover-grid" id="swatchPopoverGrid"></div>
     </div>
   </div>
 
